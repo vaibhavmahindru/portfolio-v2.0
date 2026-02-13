@@ -1,12 +1,42 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import GridBackground from "@/components/GridBackground";
+import ScrollProgress from "@/components/ScrollProgress";
+import HeroSection from "@/components/HeroSection";
+import ProjectsSection from "@/components/ProjectsSection";
+import StatusWidget from "@/components/StatusWidget";
+import { motion } from "framer-motion";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="dark relative min-h-screen bg-background text-foreground overflow-x-hidden">
+      <GridBackground />
+      <ScrollProgress />
+      <StatusWidget />
+
+      <main className="relative z-10">
+        <HeroSection />
+        <ProjectsSection />
+
+        {/* Footer */}
+        <footer className="px-6 py-16 border-t border-border">
+          <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <span className="font-mono text-xs text-muted-foreground">
+              © 2026 · Built with precision
+            </span>
+            <div className="flex gap-6">
+              {["GitHub", "LinkedIn", "Email"].map((link) => (
+                <motion.a
+                  key={link}
+                  href="#"
+                  className="font-mono text-xs text-muted-foreground hover:text-primary transition-colors duration-300"
+                  whileHover={{ y: -1 }}
+                >
+                  {link}
+                </motion.a>
+              ))}
+            </div>
+          </div>
+        </footer>
+      </main>
     </div>
   );
 };
