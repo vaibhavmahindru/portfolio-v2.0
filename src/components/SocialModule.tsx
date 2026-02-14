@@ -35,9 +35,18 @@ const SocialModule = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08 }}
-              className="glow-border rounded-md bg-card p-4 space-y-3 group block"
+              whileHover={{ scale: 1.02 }}
+              className="glow-border rounded-md bg-card p-4 space-y-3 group block relative overflow-hidden"
             >
-              <s.icon className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              {/* Animated connection line on hover */}
+              <motion.div
+                className="absolute bottom-0 left-0 h-px bg-primary"
+                initial={{ width: "0%" }}
+                whileHover={{ width: "100%" }}
+                transition={{ duration: 0.3 }}
+              />
+
+              <s.icon className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
               <div className="space-y-1">
                 <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
                   PLATFORM
