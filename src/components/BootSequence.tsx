@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const bootLines = [
-  "Initializing runtime...",
+  "Initializing environment...",
   "Validating secure modules...",
   "Connecting to cloud infrastructure...",
   "System status: STABLE",

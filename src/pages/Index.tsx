@@ -8,12 +8,17 @@ import SystemOverview from "@/components/SystemOverview";
 import CapabilitiesModule from "@/components/CapabilitiesModule";
 import DeployedSystems from "@/components/DeployedSystems";
 import TechStackGraph from "@/components/TechStackGraph";
+import TrustSignals from "@/components/TrustSignals";
 import LiveStatusPanel from "@/components/LiveStatusPanel";
 import ResumeCenter from "@/components/ResumeCenter";
 import SocialModule from "@/components/SocialModule";
 import ContactModule from "@/components/ContactModule";
 import SystemFooter from "@/components/SystemFooter";
 import CustomCursor from "@/components/CustomCursor";
+import TelemetryFeedback from "@/components/TelemetryFeedback";
+import IdleDetector from "@/components/IdleDetector";
+import PerformanceWidget from "@/components/PerformanceWidget";
+import TerminalOverlay from "@/components/TerminalOverlay";
 
 const Index = () => {
   const [booted, setBooted] = useState(false);
@@ -26,6 +31,10 @@ const Index = () => {
       <GridBackground />
       <ScrollProgress />
       <TopBar />
+      <TelemetryFeedback />
+      <IdleDetector />
+      <PerformanceWidget />
+      <TerminalOverlay />
 
       <main className="relative z-10">
         <HeroSection />
@@ -33,6 +42,7 @@ const Index = () => {
         <CapabilitiesModule />
         <DeployedSystems />
         <TechStackGraph />
+        <TrustSignals />
         <LiveStatusPanel />
         <ResumeCenter />
         <SocialModule />

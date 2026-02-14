@@ -14,6 +14,7 @@ interface Deployment {
   impact: string;
   stack: string[];
   sourceUrl?: string;
+  flow: string[];
 }
 
 const deployments: Deployment[] = [
@@ -28,6 +29,7 @@ const deployments: Deployment[] = [
     architecture: "Go microservices, gRPC, Redis pub/sub, Kubernetes. 3-region active-active.",
     impact: "Handles 50k req/s with 99.97% uptime. Reduced sync failures by 98%.",
     stack: ["Go", "gRPC", "Redis", "K8s"],
+    flow: ["Client", "API Gateway", "gRPC Services", "Redis Pub/Sub", "K8s Pods"],
     sourceUrl: "#",
   },
   {
@@ -41,6 +43,7 @@ const deployments: Deployment[] = [
     architecture: "TypeScript, Terraform, AWS CDK, Prometheus. Declarative pipeline engine.",
     impact: "Manages 200+ services. Zero-downtime deployments. 80% faster provisioning.",
     stack: ["TypeScript", "Terraform", "AWS", "Prometheus"],
+    flow: ["Git Push", "Terraform Plan", "AWS CDK", "Prometheus", "Dashboard"],
     sourceUrl: "#",
   },
   {
@@ -54,6 +57,7 @@ const deployments: Deployment[] = [
     architecture: "Rust core, Python ML layer, RabbitMQ, TensorFlow Lite.",
     impact: "40% reduction in over-provisioning. Sub-3ms p99 latency.",
     stack: ["Rust", "Python", "RabbitMQ", "TensorFlow"],
+    flow: ["Producer", "ML Predictor", "RabbitMQ", "Rust Consumer", "DB"],
     sourceUrl: "#",
   },
   {
@@ -67,6 +71,7 @@ const deployments: Deployment[] = [
     architecture: "Node.js, PostgreSQL, HashiCorp Vault, Docker. SOC 2 compliant.",
     impact: "99.99% uptime. Full audit logging. Passed 3 security audits.",
     stack: ["Node.js", "PostgreSQL", "Vault", "Docker"],
+    flow: ["Client", "API → JWT Auth", "Vault HSM", "PostgreSQL", "Audit Log"],
     sourceUrl: "#",
   },
 ];
@@ -212,6 +217,18 @@ const DeployedSystems = () => {
                       </p>
                     </div>
                   ))}
+                </div>
+
+                <div className="space-y-2 pt-4 border-t border-border">
+                  <p className="font-mono text-[10px] text-primary uppercase tracking-wider">ARCHITECTURE FLOW</p>
+                  <div className="flex items-center gap-1 flex-wrap font-mono text-xs">
+                    {expanded.flow.map((step, idx) => (
+                      <span key={idx} className="flex items-center gap-1">
+                        <span className="px-2 py-1 bg-secondary text-secondary-foreground rounded-sm">{step}</span>
+                        {idx < expanded.flow.length - 1 && <span className="text-primary">→</span>}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="space-y-2 pt-4 border-t border-border">

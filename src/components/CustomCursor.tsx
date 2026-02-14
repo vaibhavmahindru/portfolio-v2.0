@@ -31,9 +31,12 @@ const CustomCursor = () => {
       if (card) {
         setHoverLabel(card.getAttribute("data-cursor-label"));
         setIsHovering(true);
-      } else if (target.closest("a, button, [role='button']")) {
+      } else if (target.closest("a[href]")) {
         setIsHovering(true);
-        setHoverLabel(null);
+        setHoverLabel("Navigate");
+      } else if (target.closest("button")) {
+        setIsHovering(true);
+        setHoverLabel("Execute");
       } else {
         setIsHovering(false);
         setHoverLabel(null);

@@ -54,7 +54,7 @@ const statusColor: Record<string, string> = {
 };
 
 const CapabilitiesModule = () => {
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
   return (
     <section id="capabilities" className="px-6 py-24">
@@ -74,73 +74,95 @@ const CapabilitiesModule = () => {
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-4">
-          {capabilities.map((cap, i) => (
-            <motion.div
-              key={cap.module}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-30px" }}
-              transition={{ duration: 0.4, delay: i * 0.08 }}
-              onMouseEnter={() => setHoveredIdx(i)}
-              onMouseLeave={() => setHoveredIdx(null)}
-              className="glow-border rounded-md bg-card p-5 space-y-3 cursor-default"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
-                    MODULE
-                  </p>
-                  <h3 className="font-semibold text-foreground">{cap.module}</h3>
+          {capabilities.map((cap, i) => {
+            const isExpanded = expandedIdx === i;
+            return (
+              <motion.div
+                key={cap.module}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-30px" }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                className="glow-border rounded-md bg-card p-5 space-y-3 cursor-default"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+                      MODULE
+                    </p>
+                    <h3 className="font-semibold text-foreground">{cap.module}</h3>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        cap.status === "ACTIVE"
+                          ? "bg-terminal-green"
+                          : cap.status === "STABLE"
+                          ? "bg-primary"
+                          : "bg-status-experimental"
+                      }`}
+                      style={{ boxShadow: "0 0 6px currentColor" }}
+                    />
+                    <span className={`font-mono text-[10px] ${statusColor[cap.status]}`}>
+                      {cap.status}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <div
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      cap.status === "ACTIVE"
-                        ? "bg-terminal-green"
-                        : cap.status === "STABLE"
-                        ? "bg-primary"
-                        : "bg-status-experimental"
-                    }`}
-                    style={{ boxShadow: "0 0 6px currentColor" }}
-                  />
-                  <span className={`font-mono text-[10px] ${statusColor[cap.status]}`}>
-                    {cap.status}
-                  </span>
+
+                <p className="text-sm text-muted-foreground">{cap.description}</p>
+
+                <div className="flex flex-wrap gap-1.5">
+                  {cap.tools.map((t) => (
+                    <span
+                      key={t}
+                      className="px-2 py-0.5 text-[10px] font-mono bg-secondary text-secondary-foreground rounded-sm"
+                    >
+                      {t}
+                    </span>
+                  ))}
                 </div>
-              </div>
 
-              <p className="text-sm text-muted-foreground">{cap.description}</p>
-
-              <div className="flex flex-wrap gap-1.5">
-                {cap.tools.map((t) => (
-                  <span
-                    key={t}
-                    className="px-2 py-0.5 text-[10px] font-mono bg-secondary text-secondary-foreground rounded-sm"
+                {/* Clickable expansion trigger */}
+                <div className="pt-2 border-t border-border">
+                  <button
+                    onClick={() => setExpandedIdx(isExpanded ? null : i)}
+                    className="font-mono text-[10px] text-primary hover:underline cursor-pointer bg-transparent border-none p-0"
                   >
-                    {t}
-                  </span>
-                ))}
-              </div>
+                    {isExpanded ? "Hide Technical Stack ↑" : "View Technical Stack →"}
+                  </button>
+                </div>
 
-              <AnimatePresence>
-                {hoveredIdx === i && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="pt-2 border-t border-border">
-                      <span className="font-mono text-[10px] text-primary cursor-pointer hover:underline">
-                        View Technical Stack →
-                      </span>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="space-y-2 pt-1">
+                        <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+                          TECHNICAL STACK DETAILS
+                        </p>
+                        {cap.tools.map((tool) => (
+                          <div key={tool} className="flex items-center gap-2">
+                            <div className="w-1 h-1 rounded-full bg-primary" />
+                            <span className="font-mono text-xs text-foreground">{tool}</span>
+                            <span className="font-mono text-[10px] text-terminal-green ml-auto">LOADED</span>
+                          </div>
+                        ))}
+                        <div className="flex items-center gap-2 pt-1">
+                          <span className="font-mono text-[10px] text-muted-foreground">MODULE STATUS:</span>
+                          <span className={`font-mono text-[10px] ${statusColor[cap.status]}`}>{cap.status}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
