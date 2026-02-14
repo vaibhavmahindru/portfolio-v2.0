@@ -12,6 +12,7 @@ interface Deployment {
   solution: string;
   architecture: string;
   impact: string;
+  stack: string[];
   sourceUrl?: string;
 }
 
@@ -26,6 +27,7 @@ const deployments: Deployment[] = [
     solution: "Built an event-driven sync engine with CQRS and automatic conflict resolution.",
     architecture: "Go microservices, gRPC, Redis pub/sub, Kubernetes. 3-region active-active.",
     impact: "Handles 50k req/s with 99.97% uptime. Reduced sync failures by 98%.",
+    stack: ["Go", "gRPC", "Redis", "K8s"],
     sourceUrl: "#",
   },
   {
@@ -38,6 +40,7 @@ const deployments: Deployment[] = [
     solution: "GitOps-based IaC platform with drift detection and auto-remediation.",
     architecture: "TypeScript, Terraform, AWS CDK, Prometheus. Declarative pipeline engine.",
     impact: "Manages 200+ services. Zero-downtime deployments. 80% faster provisioning.",
+    stack: ["TypeScript", "Terraform", "AWS", "Prometheus"],
     sourceUrl: "#",
   },
   {
@@ -50,6 +53,7 @@ const deployments: Deployment[] = [
     solution: "ML-based load prediction for adaptive queue scaling.",
     architecture: "Rust core, Python ML layer, RabbitMQ, TensorFlow Lite.",
     impact: "40% reduction in over-provisioning. Sub-3ms p99 latency.",
+    stack: ["Rust", "Python", "RabbitMQ", "TensorFlow"],
     sourceUrl: "#",
   },
   {
@@ -62,6 +66,7 @@ const deployments: Deployment[] = [
     solution: "Zero-knowledge encryption service with HSM-backed key management.",
     architecture: "Node.js, PostgreSQL, HashiCorp Vault, Docker. SOC 2 compliant.",
     impact: "99.99% uptime. Full audit logging. Passed 3 security audits.",
+    stack: ["Node.js", "PostgreSQL", "Vault", "Docker"],
     sourceUrl: "#",
   },
 ];
@@ -79,8 +84,8 @@ const statusDotColors: Record<string, string> = {
 };
 
 const DeployedSystems = () => {
-  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
-  const selected = selectedIdx !== null ? deployments[selectedIdx] : null;
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  const expanded = expandedIdx !== null ? deployments[expandedIdx] : null;
 
   return (
     <section id="deployments" className="px-6 py-24">
@@ -101,11 +106,16 @@ const DeployedSystems = () => {
           {deployments.map((d, i) => (
             <motion.div
               key={d.name}
+              data-cursor-label="Inspect"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-30px" }}
-              transition={{ duration: 0.4, delay: i * 0.08 }}
-              className="glow-border rounded-md bg-card p-5 space-y-3"
+              transition={{ duration: 0.3, delay: i * 0.08 }}
+              whileHover={{
+                scale: 1.01,
+                boxShadow: "0 8px 30px hsl(var(--primary) / 0.08)",
+              }}
+              className="glow-border rounded-md bg-card p-5 space-y-3 transition-all duration-300"
             >
               <div className="flex items-start justify-between">
                 <h3 className="font-semibold text-foreground text-lg">{d.name}</h3>
@@ -123,9 +133,17 @@ const DeployedSystems = () => {
                 <span>ROLE <span className="text-foreground ml-1">{d.role}</span></span>
               </div>
 
+              <div className="flex flex-wrap gap-2">
+                {d.stack.map((tech) => (
+                  <span key={tech} className="px-2 py-0.5 text-[10px] font-mono bg-secondary text-secondary-foreground rounded-sm">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+
               <div className="flex gap-3 pt-1">
                 <button
-                  onClick={() => setSelectedIdx(i)}
+                  onClick={() => setExpandedIdx(i)}
                   className="px-3 py-1.5 text-xs font-mono border border-border text-foreground rounded-sm hover:border-primary/50 hover:text-primary transition-colors"
                 >
                   View Architecture
@@ -144,55 +162,68 @@ const DeployedSystems = () => {
         </div>
       </div>
 
-      {/* Slide-out panel */}
+      {/* Fullscreen expansion panel */}
       <AnimatePresence>
-        {selected && (
+        {expanded && (
           <>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
-              onClick={() => setSelectedIdx(null)}
+              className="fixed inset-0 z-50 bg-background/90 backdrop-blur-md"
+              onClick={() => setExpandedIdx(null)}
             />
             <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-lg bg-card border-l border-border overflow-y-auto"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="fixed inset-4 md:inset-12 lg:inset-20 z-50 bg-card border border-border rounded-md overflow-y-auto"
             >
-              <div className="p-6 space-y-6">
+              <div className="p-8 md:p-12 space-y-8 max-w-3xl mx-auto">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-xl font-bold text-foreground">{selected.name}</h3>
-                    <span className={`font-mono text-xs ${statusColors[selected.status]}`}>
-                      {selected.status}
+                    <h3 className="text-2xl font-bold text-foreground">{expanded.name}</h3>
+                    <span className={`font-mono text-xs ${statusColors[expanded.status]}`}>
+                      {expanded.status}
                     </span>
                   </div>
                   <button
-                    onClick={() => setSelectedIdx(null)}
-                    className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() => setExpandedIdx(null)}
+                    className="p-2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
-                {[
-                  { label: "PROBLEM", content: selected.problem },
-                  { label: "SOLUTION", content: selected.solution },
-                  { label: "ARCHITECTURE", content: selected.architecture },
-                  { label: "IMPACT", content: selected.impact },
-                ].map((block) => (
-                  <div key={block.label} className="space-y-1.5">
-                    <p className="font-mono text-[10px] text-primary uppercase tracking-wider">
-                      {block.label}
-                    </p>
-                    <p className="text-sm text-secondary-foreground leading-relaxed">
-                      {block.content}
-                    </p>
+                <div className="grid md:grid-cols-2 gap-8">
+                  {[
+                    { label: "PROBLEM", content: expanded.problem },
+                    { label: "SOLUTION", content: expanded.solution },
+                    { label: "ARCHITECTURE", content: expanded.architecture },
+                    { label: "IMPACT", content: expanded.impact },
+                  ].map((block) => (
+                    <div key={block.label} className="space-y-2">
+                      <p className="font-mono text-[10px] text-primary uppercase tracking-wider">
+                        {block.label}
+                      </p>
+                      <p className="text-sm text-secondary-foreground leading-relaxed">
+                        {block.content}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-2 pt-4 border-t border-border">
+                  <p className="font-mono text-[10px] text-primary uppercase tracking-wider">STACK</p>
+                  <div className="flex flex-wrap gap-2">
+                    {expanded.stack.map((t) => (
+                      <span key={t} className="px-3 py-1 text-xs font-mono bg-secondary text-secondary-foreground rounded-sm">
+                        {t}
+                      </span>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
             </motion.div>
           </>

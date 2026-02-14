@@ -1,9 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
 const SystemFooter = () => {
   const [showDiagnostics, setShowDiagnostics] = useState(false);
+
+  // Hidden keyboard shortcut: press "D" to open diagnostics
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "d" || e.key === "D") {
+        const target = e.target as HTMLElement;
+        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT") return;
+        setShowDiagnostics((p) => !p);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   return (
     <>
@@ -25,7 +38,6 @@ const SystemFooter = () => {
         </div>
       </footer>
 
-      {/* Diagnostics Modal */}
       <AnimatePresence>
         {showDiagnostics && (
           <>
@@ -40,7 +52,7 @@ const SystemFooter = () => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.25 }}
               className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm bg-card border border-border rounded-md p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
@@ -61,14 +73,15 @@ const SystemFooter = () => {
                 { label: "Region", value: "Edge (Global)" },
                 { label: "Version", value: "3.2.0" },
               ].map((d) => (
-                <div
-                  key={d.label}
-                  className="flex justify-between font-mono text-xs"
-                >
+                <div key={d.label} className="flex justify-between font-mono text-xs">
                   <span className="text-muted-foreground">{d.label}</span>
                   <span className="text-foreground">{d.value}</span>
                 </div>
               ))}
+
+              <p className="font-mono text-[10px] text-muted-foreground/50 text-center pt-2">
+                Press "D" to toggle this panel
+              </p>
             </motion.div>
           </>
         )}
