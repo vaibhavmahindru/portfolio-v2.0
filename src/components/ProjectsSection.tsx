@@ -138,7 +138,7 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
 
 const ProjectsSection = () => {
   return (
-    <section className="relative px-6 py-24">
+    <section className="relative px-6 py-12 md:py-24">
       <div className="max-w-4xl mx-auto space-y-8">
         <motion.div
           initial={{ opacity: 0 }}

@@ -1,72 +1,92 @@
 import { motion } from "framer-motion";
-import { Github, Linkedin, Twitter, Instagram } from "lucide-react";
+import { Github, Linkedin, Mail, ExternalLink } from "lucide-react";
+import { profile } from "@/config/profile";
 
-const socials = [
-  { platform: "GitHub", status: "ACTIVE", detail: "CONTRIBUTIONS: LIVE", icon: Github, url: "#" },
-  { platform: "LinkedIn", status: "ACTIVE", detail: "NETWORK: OPEN", icon: Linkedin, url: "#" },
-  { platform: "Twitter", status: "ACTIVE", detail: "SIGNAL: BROADCASTING", icon: Twitter, url: "#" },
-  { platform: "Instagram", status: "PASSIVE", detail: "FEED: MINIMAL", icon: Instagram, url: "#" },
+interface SocialItem {
+  platform: string;
+  status: "ACTIVE" | "PASSIVE";
+  detail: string;
+  icon: typeof Github;
+  href: string;
+  isEmail?: boolean;
+}
+
+const socials: SocialItem[] = [
+  { platform: "GitHub", status: "ACTIVE", detail: "Open source contributions", icon: Github, href: profile.links.github },
+  { platform: "LinkedIn", status: "ACTIVE", detail: "Professional network", icon: Linkedin, href: profile.links.linkedin },
+  { platform: "Email", status: "ACTIVE", detail: profile.contact.email, icon: Mail, href: `mailto:${profile.contact.email}`, isEmail: true },
 ];
+
+const iconAnimations: Record<string, object> = {
+  GitHub: { rotate: [0, -10, 10, -5, 0], transition: { duration: 0.5 } },
+  LinkedIn: { scale: [1, 1.2, 1], transition: { duration: 0.4 } },
+  Email: { y: [0, -3, 0], transition: { duration: 0.3 } },
+};
 
 const SocialModule = () => {
   return (
-    <section id="social" className="px-6 py-24">
-      <div className="max-w-4xl mx-auto space-y-8">
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="space-y-2"
+      className="glow-border rounded-md bg-card overflow-hidden h-full flex flex-col"
         >
-          <span className="font-mono text-xs text-primary uppercase tracking-widest">
-            // Social
-          </span>
-          <h2 className="text-3xl font-bold text-foreground">
-            Network Interface
-          </h2>
-        </motion.div>
+      {/* Header */}
+      <div className="p-5 pb-4 border-b border-border/50">
+        <div className="flex items-center gap-2.5 mb-1">
+          <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center">
+            <ExternalLink className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <p className="font-mono text-xs text-foreground font-medium">Network</p>
+            <p className="font-mono text-[10px] text-muted-foreground">Social interfaces</p>
+          </div>
+        </div>
+      </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Social links */}
+      <div className="p-5 flex-1 space-y-2">
           {socials.map((s, i) => (
             <motion.a
               key={s.platform}
-              href={s.url}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+            href={s.href}
+            target={s.isEmail ? undefined : "_blank"}
+            rel={s.isEmail ? undefined : "noopener noreferrer"}
+            initial={{ opacity: 0, x: -10 }}
+            whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08 }}
-              whileHover={{ scale: 1.02 }}
-              className="glow-border rounded-md bg-card p-4 space-y-3 group block relative overflow-hidden"
+            whileHover={{ x: 4 }}
+            className="flex items-center gap-3 p-3 rounded-md bg-secondary/30 hover:bg-secondary/60 border border-transparent hover:border-border/50 transition-all group"
+            aria-label={`Visit ${s.platform} profile`}
+          >
+            <motion.div
+              whileHover={iconAnimations[s.platform]}
+              className="w-9 h-9 rounded-md bg-card border border-border/50 flex items-center justify-center shrink-0"
             >
-              {/* Animated connection line on hover */}
-              <motion.div
-                className="absolute bottom-0 left-0 h-px bg-primary"
-                initial={{ width: "0%" }}
-                whileHover={{ width: "100%" }}
-                transition={{ duration: 0.3 }}
-              />
-
-              <s.icon className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
-              <div className="space-y-1">
-                <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
-                  PLATFORM
-                </p>
-                <p className="font-mono text-xs text-foreground">{s.platform}</p>
+              <s.icon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </motion.div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="font-mono text-xs text-foreground font-medium">{s.platform}</p>
+                <div className={`w-1.5 h-1.5 rounded-full ${s.status === "ACTIVE" ? "bg-terminal-green" : "bg-muted-foreground/40"}`} />
               </div>
-              <div className="space-y-1">
-                <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
-                  STATUS
-                </p>
-                <p className={`font-mono text-[10px] ${s.status === "ACTIVE" ? "text-terminal-green" : "text-muted-foreground"}`}>
-                  {s.status}
-                </p>
+              <p className="font-mono text-[10px] text-muted-foreground truncate">{s.detail}</p>
               </div>
-              <p className="font-mono text-[10px] text-muted-foreground">{s.detail}</p>
+            <ExternalLink className="w-3 h-3 text-muted-foreground/40 group-hover:text-primary/60 transition-colors shrink-0" />
             </motion.a>
           ))}
+      </div>
+
+      {/* Footer CTA */}
+      <div className="px-5 pb-5">
+        <div className="p-3 rounded-md bg-primary/5 border border-primary/10">
+          <p className="font-mono text-[10px] text-primary text-center">
+            Open to collaborations and conversations
+          </p>
         </div>
       </div>
-    </section>
+    </motion.div>
   );
 };
 

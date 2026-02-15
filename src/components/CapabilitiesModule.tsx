@@ -1,51 +1,25 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { profile } from "@/config/profile";
 
-interface Capability {
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.1 } },
+};
+
+const cardVariant = {
+  hidden: { opacity: 0, y: 25 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+};
+
+/* Capabilities data comes from profile.ts — edit there to update */
+const capabilities = profile.capabilities as unknown as {
   module: string;
   status: "ACTIVE" | "STABLE" | "BUILDING";
   description: string;
-  tools: string[];
-}
-
-const capabilities: Capability[] = [
-  {
-    module: "API Architecture",
-    status: "ACTIVE",
-    description: "Scalable REST & event-driven systems",
-    tools: ["Node.js", "PostgreSQL", "Redis", "GraphQL"],
-  },
-  {
-    module: "Cloud Infrastructure",
-    status: "ACTIVE",
-    description: "AWS-focused cloud design & provisioning",
-    tools: ["AWS", "Terraform", "Docker", "K8s"],
-  },
-  {
-    module: "Automation Systems",
-    status: "ACTIVE",
-    description: "CI/CD pipelines & workflow automation",
-    tools: ["GitHub Actions", "Jenkins", "Ansible", "Shell"],
-  },
-  {
-    module: "Performance Optimization",
-    status: "STABLE",
-    description: "Latency reduction & throughput tuning",
-    tools: ["Profiling", "Caching", "CDN", "Load Testing"],
-  },
-  {
-    module: "Security Hardening",
-    status: "STABLE",
-    description: "Infrastructure security & compliance",
-    tools: ["Vault", "IAM", "SSL/TLS", "Audit Logging"],
-  },
-  {
-    module: "Data Engineering",
-    status: "BUILDING",
-    description: "ETL pipelines & data infrastructure",
-    tools: ["Python", "Kafka", "Spark", "Airflow"],
-  },
-];
+  tools: readonly string[];
+  details?: readonly string[];
+}[];
 
 const statusColor: Record<string, string> = {
   ACTIVE: "text-terminal-green",
@@ -57,32 +31,31 @@ const CapabilitiesModule = () => {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
   return (
-    <section id="capabilities" className="px-6 py-24">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="space-y-2"
-        >
+    <section id="capabilities" className="px-4 sm:px-6 py-12 md:py-24">
+      <div className="max-w-6xl mx-auto space-y-8">
+        <div className="space-y-2" data-gsap="clip-up" data-gsap-duration="1">
           <span className="font-mono text-xs text-primary uppercase tracking-widest">
             // Skills
           </span>
           <h2 className="text-3xl font-bold text-foreground">
             Operational Capabilities
           </h2>
-        </motion.div>
+        </div>
+        <div className="gsap-divider h-px bg-gradient-to-r from-primary/50 via-primary/20 to-transparent" />
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-50px" }}
+          className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4"
+        >
           {capabilities.map((cap, i) => {
             const isExpanded = expandedIdx === i;
             return (
               <motion.div
                 key={cap.module}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-30px" }}
-                transition={{ duration: 0.4, delay: i * 0.08 }}
+                variants={cardVariant}
                 className="glow-border rounded-md bg-card p-5 space-y-3 cursor-default"
               >
                 <div className="flex items-start justify-between">
@@ -109,8 +82,6 @@ const CapabilitiesModule = () => {
                   </div>
                 </div>
 
-                <p className="text-sm text-muted-foreground">{cap.description}</p>
-
                 <div className="flex flex-wrap gap-1.5">
                   {cap.tools.map((t) => (
                     <span
@@ -128,7 +99,7 @@ const CapabilitiesModule = () => {
                     onClick={() => setExpandedIdx(isExpanded ? null : i)}
                     className="font-mono text-[10px] text-primary hover:underline cursor-pointer bg-transparent border-none p-0"
                   >
-                    {isExpanded ? "Hide Technical Stack ↑" : "View Technical Stack →"}
+                    {isExpanded ? "Hide Details ↑" : "View Details →"}
                   </button>
                 </div>
 
@@ -141,21 +112,22 @@ const CapabilitiesModule = () => {
                       transition={{ duration: 0.25 }}
                       className="overflow-hidden"
                     >
-                      <div className="space-y-2 pt-1">
-                        <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
-                          TECHNICAL STACK DETAILS
-                        </p>
-                        {cap.tools.map((tool) => (
-                          <div key={tool} className="flex items-center gap-2">
-                            <div className="w-1 h-1 rounded-full bg-primary" />
-                            <span className="font-mono text-xs text-foreground">{tool}</span>
-                            <span className="font-mono text-[10px] text-terminal-green ml-auto">LOADED</span>
+                      <div className="space-y-3 pt-1">
+                        {/* <p className="text-sm text-muted-foreground leading-relaxed">{cap.description}</p> */}
+
+                        {cap.details && cap.details.length > 0 && (
+                          <div className="space-y-1.5">
+                            <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+                              IMPLEMENTATION DETAILS
+                            </p>
+                            {cap.details.map((detail) => (
+                              <div key={detail} className="flex items-start gap-2">
+                                <div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                                <span className="font-mono text-[11px] text-foreground/80 leading-relaxed">{detail}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                        <div className="flex items-center gap-2 pt-1">
-                          <span className="font-mono text-[10px] text-muted-foreground">MODULE STATUS:</span>
-                          <span className={`font-mono text-[10px] ${statusColor[cap.status]}`}>{cap.status}</span>
-                        </div>
+                        )}
                       </div>
                     </motion.div>
                   )}
@@ -163,7 +135,7 @@ const CapabilitiesModule = () => {
               </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

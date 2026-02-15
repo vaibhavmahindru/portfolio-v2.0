@@ -1,30 +1,30 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Download, ExternalLink, Linkedin } from "lucide-react";
+import { profile } from "@/config/profile";
 
-const metrics = [
-  { label: "Experience", value: "5+ Years" },
-  { label: "Primary Stack", value: "Backend + AWS" },
-  { label: "Projects Delivered", value: "12+" },
-  { label: "Certifications", value: "AWS (Soon)" },
-];
+/* Resume metrics come from profile.ts — edit there to update */
+const metrics = profile.resumeMetrics as unknown as { label: string; value: string }[];
 
 const ResumeCenter = () => {
   const [downloaded, setDownloaded] = useState(false);
 
   const handleDownload = () => {
+    if (profile.links.resume === "#") {
+      alert("Resume PDF coming soon. Connect via the contact form below.");
+      return;
+    }
     setDownloaded(true);
     setTimeout(() => setDownloaded(false), 2000);
-    // Direct download — replace # with actual PDF URL
     const link = document.createElement("a");
-    link.href = "#";
-    link.download = "Alex_Chen_Resume.pdf";
+    link.href = profile.links.resume;
+    link.download = `${profile.name.replace(/\s+/g, "_")}_Resume.pdf`;
     link.click();
   };
 
   return (
-    <section id="resume" className="px-6 py-24">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <section id="resume" className="px-6 py-16">
+      <div className="max-w-6xl mx-auto space-y-6">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -39,101 +39,91 @@ const ResumeCenter = () => {
           </h2>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Left — Summary + Preview */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="space-y-4"
-          >
-            {/* Resume preview thumbnail */}
-            <div className="glow-border rounded-md bg-card p-4 aspect-[8.5/11] flex items-center justify-center relative overflow-hidden group">
-              <div className="absolute inset-0 opacity-[0.03] grid-overlay" />
-              <div className="text-center space-y-2 relative z-10">
-                <p className="font-mono text-xs text-muted-foreground">RESUME PREVIEW</p>
-                <div className="w-32 mx-auto space-y-1.5">
-                  <div className="h-1.5 bg-foreground/10 rounded-full w-full" />
-                  <div className="h-1 bg-foreground/5 rounded-full w-3/4" />
-                  <div className="h-1 bg-foreground/5 rounded-full w-full" />
-                  <div className="h-1 bg-foreground/5 rounded-full w-5/6" />
-                  <div className="h-4" />
-                  <div className="h-1 bg-foreground/5 rounded-full w-full" />
-                  <div className="h-1 bg-foreground/5 rounded-full w-2/3" />
-                  <div className="h-1 bg-foreground/5 rounded-full w-full" />
-                  <div className="h-1 bg-foreground/5 rounded-full w-4/5" />
+          className="glow-border rounded-md bg-card p-6"
+        >
+          <div className="grid md:grid-cols-[1fr_auto_1fr] gap-6 items-center">
+            {/* Left — identity + bio */}
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-lg overflow-hidden border border-border shrink-0">
+                <img
+                  src={profile.photo}
+                  alt={profile.name}
+                  className="w-full h-full object-cover object-top"
+                  loading="lazy"
+                />
                 </div>
+              <div className="min-w-0">
+                <p className="font-mono text-sm text-foreground font-medium">{profile.name}</p>
+                <p className="font-mono text-[11px] text-muted-foreground">{profile.title}</p>
+                <p className="text-xs text-secondary-foreground mt-1 line-clamp-2">{profile.resumeBio}</p>
               </div>
             </div>
 
-            <p className="text-secondary-foreground leading-relaxed text-sm">
-              Systems engineer with 5+ years building backend services, cloud infrastructure,
-              and automation pipelines. Focused on scalable architecture, reliability, and
-              clean engineering practices.
-            </p>
-          </motion.div>
+            {/* Divider */}
+            <div className="hidden md:block w-px h-16 bg-border" />
 
-          {/* Right — Actions + Metrics */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="flex flex-col gap-3 justify-center"
-          >
+            {/* Right — metrics + actions */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-4 gap-2">
+                {metrics.map((m) => (
+                  <div key={m.label} className="text-center">
+                    <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-wider">{m.label}</p>
+                    <p className="font-mono text-xs text-foreground font-medium mt-0.5">{m.value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
             <button
               onClick={handleDownload}
-              className="relative px-5 py-3 text-xs font-mono bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors text-center flex items-center justify-center gap-2 overflow-hidden"
+                  className="flex-1 px-3 py-2 text-[11px] font-mono bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5 overflow-hidden"
             >
               <AnimatePresence mode="wait">
                 {downloaded ? (
                   <motion.span
                     key="done"
-                    initial={{ opacity: 0, y: 8 }}
+                        initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="flex items-center gap-2"
+                        exit={{ opacity: 0, y: -6 }}
                   >
-                    ✓ Downloaded
+                        Downloaded
                   </motion.span>
                 ) : (
                   <motion.span
-                    key="download"
-                    initial={{ opacity: 0, y: 8 }}
+                        key="dl"
+                        initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="flex items-center gap-2"
+                        exit={{ opacity: 0, y: -6 }}
+                        className="flex items-center gap-1.5"
                   >
-                    <Download className="w-3.5 h-3.5" /> Download PDF
+                        <Download className="w-3 h-3" /> Download PDF
                   </motion.span>
                 )}
               </AnimatePresence>
             </button>
             <a
-              href="#"
-              className="px-5 py-3 text-xs font-mono border border-border text-foreground rounded-sm hover:border-primary/50 hover:text-primary transition-colors text-center flex items-center justify-center gap-2"
+                  href={profile.links.resumeOnline}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-2 text-[11px] font-mono border border-border text-foreground rounded-sm hover:border-primary/50 hover:text-primary transition-colors flex items-center gap-1.5"
             >
-              <ExternalLink className="w-3.5 h-3.5" /> View Online Version
+                  <ExternalLink className="w-3 h-3" /> Online
             </a>
             <a
-              href="#"
-              className="px-5 py-3 text-xs font-mono border border-border text-muted-foreground rounded-sm hover:border-muted-foreground transition-colors text-center flex items-center justify-center gap-2"
+                  href={profile.links.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-2 text-[11px] font-mono border border-border text-muted-foreground rounded-sm hover:border-muted-foreground transition-colors flex items-center gap-1.5"
             >
-              <Linkedin className="w-3.5 h-3.5" /> LinkedIn Profile
+                  <Linkedin className="w-3 h-3" /> LinkedIn
             </a>
-
-            <div className="grid grid-cols-2 gap-3 mt-3">
-              {metrics.map((m) => (
-                <div key={m.label} className="glow-border rounded-md bg-card p-3">
-                  <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
-                    {m.label}
-                  </p>
-                  <p className="font-mono text-sm text-foreground mt-1">{m.value}</p>
                 </div>
-              ))}
+            </div>
             </div>
           </motion.div>
-        </div>
       </div>
     </section>
   );

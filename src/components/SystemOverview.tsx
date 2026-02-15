@@ -1,110 +1,29 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const versions = [
-  {
-    version: "1.0",
-    title: "Curious Builder",
-    period: "2018 – 2020",
-    description:
-      "Started with fundamentals — HTML, CSS, JavaScript. Built small tools, scraped data, broke things intentionally. Discovered the joy of making systems work.",
-  },
-  {
-    version: "2.0",
-    title: "Startup Engineer",
-    period: "2020 – 2023",
-    description:
-      "Joined early-stage startups building backend services. Shipped APIs, managed databases, learned to build under pressure. First encounter with AWS and CI/CD pipelines.",
-  },
-  {
-    version: "3.0",
-    title: "Backend & Cloud Architect",
-    period: "2023 – Present",
-    description:
-      "Designing distributed systems, automating cloud infrastructure, and building scalable backends. Focused on reliability engineering and clean architecture patterns.",
-  },
-];
-
-const bio = {
-  name: "Alex Chen",
-  title: "Senior Systems Engineer",
-  location: "India",
-  specialization: ["Cloud Architecture", "DevOps", "Distributed Systems"],
-  status: "Available for projects",
-  api_version: "3.2",
-};
+import { profile } from "@/config/profile";
 
 const SystemOverview = () => {
   const [expanded, setExpanded] = useState<number | null>(null);
-  const [mode, setMode] = useState<"human" | "machine">("human");
 
   return (
-    <section id="about" className="px-6 py-24">
-      <div className="max-w-4xl mx-auto space-y-10">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="space-y-2"
-        >
+    <section id="about" className="px-4 sm:px-6 py-12 md:py-24">
+      <div className="max-w-6xl mx-auto space-y-10">
+        <div className="space-y-2" data-gsap="clip-up" data-gsap-duration="1">
           <span className="font-mono text-xs text-primary uppercase tracking-widest">
-            // About
+            // Experience
           </span>
           <h2 className="text-3xl font-bold text-foreground">
-            System Architecture
+            Career Timeline
           </h2>
-        </motion.div>
-
-        {/* Mode Toggle */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setMode("human")}
-            className={`px-3 py-1.5 text-xs font-mono rounded-sm border transition-all duration-300 ${
-              mode === "human"
-                ? "border-primary text-primary bg-primary/10"
-                : "border-border text-muted-foreground hover:border-muted-foreground"
-            }`}
-          >
-            HUMAN_MODE
-          </button>
-          <button
-            onClick={() => setMode("machine")}
-            className={`px-3 py-1.5 text-xs font-mono rounded-sm border transition-all duration-300 ${
-              mode === "machine"
-                ? "border-primary text-primary bg-primary/10"
-                : "border-border text-muted-foreground hover:border-muted-foreground"
-            }`}
-          >
-            MACHINE_MODE
-          </button>
         </div>
+        <div className="gsap-divider h-px bg-gradient-to-r from-primary/50 via-primary/20 to-transparent" />
 
-        <AnimatePresence mode="wait">
-          {mode === "machine" ? (
-            <motion.pre
-              key="machine"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="font-mono text-sm text-secondary-foreground bg-secondary/50 p-4 rounded-md border border-border overflow-x-auto"
-            >
-              <code>{JSON.stringify(bio, null, 2)}</code>
-            </motion.pre>
-          ) : (
-            <motion.div
-              key="human"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="relative"
-            >
+        <div className="relative">
               {/* Timeline line */}
               <div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
 
               <div className="space-y-1">
-                {versions.map((v, i) => (
+            {profile.experience.map((v, i) => (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, x: -10 }}
@@ -134,7 +53,7 @@ const SystemOverview = () => {
                       }
                       className="w-full text-left glow-border rounded-md bg-card p-4 my-1 transition-all"
                     >
-                      <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-y-1">
                         <div className="flex items-center gap-3">
                           <span className="font-mono text-xs text-primary">
                             v{v.version}
@@ -147,6 +66,11 @@ const SystemOverview = () => {
                           {v.period}
                         </span>
                       </div>
+                  {"subtitle" in v && v.subtitle && (
+                    <p className="font-mono text-[11px] text-muted-foreground/70 mt-0.5 ml-[calc(theme(spacing.3)+1.5rem)]">
+                      {v.subtitle as string}
+                    </p>
+                  )}
 
                       <AnimatePresence>
                         {expanded === i && (
@@ -165,9 +89,7 @@ const SystemOverview = () => {
                   </motion.div>
                 ))}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        </div>
       </div>
     </section>
   );
