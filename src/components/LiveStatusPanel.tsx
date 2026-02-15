@@ -1,18 +1,4 @@
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-
-const LiveStatusPanel = () => {
-  const [focusLevel, setFocusLevel] = useState(87);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setFocusLevel((prev) => {
-        const delta = Math.random() > 0.5 ? 1 : -1;
-        return Math.max(70, Math.min(99, prev + delta));
-      });
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
 
   const metrics = [
     { label: "UPTIME", value: "99.99%", color: "text-terminal-green" },
@@ -21,6 +7,17 @@ const LiveStatusPanel = () => {
     { label: "CURRENT BUILD", value: "Startup Platform", color: "text-primary" },
   ];
 
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+};
+
+const LiveStatusPanel = () => {
   return (
     <section className="px-6 py-16">
       <div className="max-w-4xl mx-auto">
@@ -32,28 +29,29 @@ const LiveStatusPanel = () => {
         >
           <div className="flex items-center gap-2 mb-5">
             <div className="status-dot bg-terminal-green" />
-            <span className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
+            <span className="font-mono text-[11px] text-muted-foreground uppercase tracking-widest">
               Live Status
             </span>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4"
+          >
             {metrics.map((m) => (
-              <div key={m.label} className="space-y-1">
-                <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+              <motion.div key={m.label} variants={fadeUp} className="space-y-1">
+                <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-wider">
                   {m.label}
                 </p>
-                <motion.p
-                  key={m.value}
-                  initial={{ opacity: 0.5 }}
-                  animate={{ opacity: 1 }}
-                  className={`font-mono text-sm font-medium ${m.color}`}
-                >
+                <p className={`font-mono text-sm font-medium ${m.color}`}>
                   {m.value}
-                </motion.p>
-              </div>
+                </p>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </motion.div>
       </div>
     </section>
