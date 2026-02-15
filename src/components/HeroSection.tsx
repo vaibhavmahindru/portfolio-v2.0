@@ -1,293 +1,1071 @@
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { useState, useRef, useCallback, useEffect } from "react";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  AnimatePresence,
+  useReducedMotion,
+  useMotionValue,
+  useSpring,
+} from "framer-motion";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  lazy,
+  Suspense,
+  useMemo,
+} from "react";
+import {
+  Github,
+  MapPin,
+  Zap,
+  ArrowRight,
+  Download,
+  Play,
+  Pause,
+  Music,
+  Clock,
+  Cloud,
+  Shield,
+  Activity,
+} from "lucide-react";
+import { profile } from "@/config/profile";
 
-const morphWords = ["SYSTEMS", "APIs", "CLOUD INFRA", "AUTOMATION", "PIPELINES"];
+const ParticleMesh = lazy(() => import("./ParticleMesh"));
 
+/* ─── Text Scramble Hook ─── */
+const CHARS = "!<>-_\\/[]{}—=+*^?#_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const useTextScramble = (text: string, trigger: boolean, speed = 30) => {
+  const [display, setDisplay] = useState(text);
+  useEffect(() => {
+    if (!trigger) {
+      setDisplay(text);
+      return;
+    }
+    let frame = 0;
+    const length = text.length;
+    const totalFrames = length + 10;
+    const interval = setInterval(() => {
+      const output = text
+        .split("")
+        .map((char, i) => {
+          if (char === " ") return " ";
+          if (i < frame - 3) return char;
+          return CHARS[Math.floor(Math.random() * CHARS.length)];
+        })
+        .join("");
+      setDisplay(output);
+      frame++;
+      if (frame > totalFrames) {
+        setDisplay(text);
+        clearInterval(interval);
+      }
+    }, speed);
+    return () => clearInterval(interval);
+  }, [text, trigger, speed]);
+  return display;
+};
+
+/* ─── Magnetic Button ─── */
+const MagneticButton = ({
+  children,
+  href,
+  className,
+  disabled,
+}: {
+  children: React.ReactNode;
+  href: string;
+  className: string;
+  disabled?: boolean;
+}) => {
+  const ref = useRef<HTMLAnchorElement>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const springX = useSpring(x, { stiffness: 150, damping: 15 });
+  const springY = useSpring(y, { stiffness: 150, damping: 15 });
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (disabled) return;
+    const rect = ref.current?.getBoundingClientRect();
+    if (!rect) return;
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    x.set((e.clientX - cx) * 0.3);
+    y.set((e.clientY - cy) * 0.3);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.a
+      ref={ref}
+      href={href}
+      style={{ x: springX, y: springY }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      whileTap={{ scale: 0.97 }}
+      className={className}
+    >
+      {children}
+    </motion.a>
+  );
+};
+
+/* ─── Typing Prompt ─── */
+const TypingPrompt = () => {
+  const [text, setText] = useState("");
+  const fullText = "ssh vaibhav@cloud ~ deploying portfolio...";
+  const [cursorVisible, setCursorVisible] = useState(true);
+
+  useEffect(() => {
+    let i = 0;
+    const typeInterval = setInterval(() => {
+      if (i <= fullText.length) {
+        setText(fullText.slice(0, i));
+        i++;
+      } else {
+        clearInterval(typeInterval);
+      }
+    }, 50);
+    return () => clearInterval(typeInterval);
+  }, []);
+
+  useEffect(() => {
+    const blink = setInterval(() => setCursorVisible((v) => !v), 530);
+    return () => clearInterval(blink);
+  }, []);
+
+  return (
+    <div className="font-mono text-[11px] text-muted-foreground/60 flex items-center gap-1">
+      <span className="text-primary/60">$</span>
+      <span>{text}</span>
+      <span
+        className={`inline-block w-[6px] h-[14px] bg-primary/50 ml-0.5 transition-opacity ${
+          cursorVisible ? "opacity-100" : "opacity-0"
+        }`}
+      />
+    </div>
+  );
+};
+
+/* ─── Morph Words (auto-cycle) — from profile config ─── */
+const morphWords = profile.hero.morphWords as unknown as string[];
+
+/* ─── GitHub Mini Stats Hook ─── */
+const GH_HERO_CACHE = "vm-gh-hero-v2";
+const GH_HERO_TTL = 1000 * 60 * 30; // 30 min
+
+interface GHMiniStats {
+  avatarUrl: string;
+  lastCommit: string; // ISO timestamp or ""
+  streak: number;
+  last7: number[]; // 7 contribution counts (Mon→Sun)
+  loaded: boolean;
+}
+
+const fmtDateLocal = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+const timeAgo = (iso: string): string => {
+  if (!iso) return "—";
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return `${Math.floor(days / 7)}w ago`;
+};
+
+const useGitHubMiniStats = (username: string) => {
+  const [stats, setStats] = useState<GHMiniStats>({
+    avatarUrl: "",
+    lastCommit: "",
+    streak: 0,
+    last7: [0, 0, 0, 0, 0, 0, 0],
+    loaded: false,
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    // Try cache first
+    try {
+      const raw = localStorage.getItem(GH_HERO_CACHE);
+      if (raw) {
+        const cached = JSON.parse(raw);
+        if (Date.now() - cached.ts < GH_HERO_TTL) {
+          if (!cancelled) setStats({ ...cached.data, loaded: true });
+          return;
+        }
+      }
+    } catch { /* ignore */ }
+
+    const run = async () => {
+      let avatarUrl = "";
+      let lastCommit = "";
+      let streak = 0;
+      const last7 = [0, 0, 0, 0, 0, 0, 0];
+
+      try {
+        // Fetch user profile + events + contributions in parallel
+        const [userRes, eventsRes, contribRes] = await Promise.allSettled([
+          fetch(`https://api.github.com/users/${username}`),
+          fetch(`https://api.github.com/users/${username}/events/public?per_page=30`),
+          fetch(`https://github-contributions-api.jogruber.de/v4/${username}?y=${new Date().getFullYear()}`),
+        ]);
+
+        // Avatar
+        if (userRes.status === "fulfilled" && userRes.value.ok) {
+          const u = await userRes.value.json();
+          avatarUrl = u.avatar_url ?? "";
+        }
+
+        // Last commit (most recent PushEvent)
+        if (eventsRes.status === "fulfilled" && eventsRes.value.ok) {
+          const events = await eventsRes.value.json();
+          if (Array.isArray(events)) {
+            const push = events.find((e: any) => e.type === "PushEvent");
+            if (push) lastCommit = push.created_at ?? "";
+          }
+        }
+
+        // Contributions → streak + last 7 days
+        if (contribRes.status === "fulfilled" && contribRes.value.ok) {
+          const body = await contribRes.value.json();
+          const raw = body.contributions;
+          if (Array.isArray(raw) && raw.length > 0) {
+            const sorted = [...raw].sort((a: any, b: any) => a.date.localeCompare(b.date));
+
+            // Last 7 days bar chart
+            const today = new Date();
+            for (let i = 6; i >= 0; i--) {
+              const key = fmtDateLocal(new Date(today.getFullYear(), today.getMonth(), today.getDate() - i));
+              const found = sorted.find((d: any) => d.date === key);
+              last7[6 - i] = found?.count ?? 0;
+            }
+
+            // Current streak (walk backwards, skip today if 0)
+            let startIdx = sorted.length - 1;
+            if (startIdx >= 0 && sorted[startIdx].count === 0) startIdx--;
+            for (let i = startIdx; i >= 0; i--) {
+              if (sorted[i].count > 0) streak++;
+              else break;
+            }
+          }
+        }
+      } catch { /* network error */ }
+
+      const data = { avatarUrl, lastCommit, streak, last7 };
+      if (!cancelled) {
+        setStats({ ...data, loaded: true });
+        try {
+          localStorage.setItem(GH_HERO_CACHE, JSON.stringify({ data, ts: Date.now() }));
+        } catch { /* storage full */ }
+      }
+    };
+
+    run();
+    return () => { cancelled = true; };
+  }, [username]);
+
+  return stats;
+};
+
+/* ─── Magnifying Glass Photo ─── */
+const MagnifyPhoto = ({ src, altSrc, alt }: { src: string; altSrc?: string; alt: string }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [magnifyPos, setMagnifyPos] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
+  const magnifyRadius = 55;
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMagnifyPos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative w-full h-full overflow-hidden cursor-none group"
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
+      {/* Base image with dot-matrix halftone overlay */}
+      <img
+        src={src}
+        alt={alt}
+        className="w-full h-full object-cover object-top"
+        loading="eager"
+      />
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-card/20 pointer-events-none" />
+
+      {/* Magnified reveal — shows alt photo if provided, otherwise enhanced version of same */}
+      <div
+        className="absolute inset-0 transition-opacity duration-150"
+        style={{
+          clipPath: isHovering
+            ? `circle(${magnifyRadius}px at ${magnifyPos.x}px ${magnifyPos.y}px)`
+            : "circle(0px at 50% 50%)",
+          opacity: isHovering ? 1 : 0,
+        }}
+      >
+        <img
+          src={altSrc || src}
+          alt=""
+          className="w-full h-full object-cover object-top"
+          style={{
+            filter: altSrc ? "brightness(1.05) contrast(1.05)" : "brightness(1.15) contrast(1.1) saturate(1.2)",
+          }}
+        />
+        <div className="absolute inset-0 bg-primary/10 mix-blend-overlay pointer-events-none" />
+      </div>
+
+      {/* Magnifying glass ring */}
+      {isHovering && (
+        <div
+          className="absolute pointer-events-none rounded-full border-2 border-primary/70 z-20"
+          style={{
+            width: magnifyRadius * 2,
+            height: magnifyRadius * 2,
+            left: magnifyPos.x - magnifyRadius,
+            top: magnifyPos.y - magnifyRadius,
+            boxShadow:
+              "0 0 15px hsl(var(--primary) / 0.25), inset 0 0 15px hsl(var(--primary) / 0.1)",
+          }}
+        />
+      )}
+
+      {/* Scan label */}
+      {isHovering && (
+        <div
+          className="absolute pointer-events-none z-20 font-mono text-[9px] text-primary tracking-widest"
+          style={{
+            left: magnifyPos.x - magnifyRadius,
+            top: magnifyPos.y + magnifyRadius + 6,
+          }}
+        >
+          SCANNING...
+        </div>
+      )}
+
+      {/* Corner brackets */}
+      <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-primary/30 z-10" />
+      <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-primary/30 z-10" />
+      <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-primary/30 z-10" />
+      <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-primary/30 z-10" />
+    </div>
+  );
+};
+
+/* ─── Stagger Word Reveal ─── */
+const wordVariants = {
+  hidden: { opacity: 0, y: 20, rotateX: -30 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    rotateX: 0,
+    transition: {
+      delay: 0.4 + i * 0.06,
+      duration: 0.5,
+      ease: [0.215, 0.61, 0.355, 1],
+    },
+  }),
+};
+
+const StaggerWords = ({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) => (
+  <span className={className} style={{ perspective: 600 }}>
+    {text.split(" ").map((word, i) => (
+      <motion.span
+        key={`${word}-${i}`}
+        custom={i}
+        initial="hidden"
+        animate="visible"
+        variants={wordVariants}
+        className="inline-block mr-[0.3em]"
+        style={{ transformOrigin: "bottom center" }}
+      >
+        {word}
+      </motion.span>
+    ))}
+  </span>
+);
+
+/* ─── Music Player ─── */
+const MiniMusicPlayer = () => {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const barCount = 16;
+
+  const toggle = useCallback(() => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play().catch(() => {
+        /* blocked by browser autoplay policy */
+      });
+    }
+    setIsPlaying(!isPlaying);
+  }, [isPlaying]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const handleEnded = () => setIsPlaying(false);
+    audio.addEventListener("ended", handleEnded);
+    return () => audio.removeEventListener("ended", handleEnded);
+  }, []);
+
+  return (
+    <div className="flex flex-col justify-between h-full">
+      <audio ref={audioRef} src="/portfolio.mp3" loop preload="none" />
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center">
+            <Music className="w-3 h-3 text-primary" />
+          </div>
+          <span className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">
+            Vibes
+          </span>
+        </div>
+        {isPlaying && (
+          <span className="font-mono text-[8px] text-primary animate-pulse tracking-wider">
+            LIVE
+          </span>
+        )}
+      </div>
+
+      {/* Equalizer bars */}
+      <div className="flex items-end justify-center gap-[2px] h-10 my-3">
+        {Array.from({ length: barCount }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="rounded-full"
+            style={{
+              width: 3,
+              backgroundColor: `hsl(var(--primary) / ${0.4 + (i / barCount) * 0.4})`,
+            }}
+            animate={
+              isPlaying
+                ? {
+                    height: [
+                      3 + Math.random() * 4,
+                      10 + Math.random() * 26,
+                      4 + Math.random() * 8,
+                    ],
+                  }
+                : { height: 3 }
+            }
+            transition={
+              isPlaying
+                ? {
+                    duration: 0.35 + Math.random() * 0.35,
+                    repeat: Infinity,
+                    repeatType: "reverse" as const,
+                    ease: "easeInOut",
+                    delay: i * 0.03,
+                  }
+                : { duration: 0.4 }
+            }
+          />
+        ))}
+      </div>
+
+      {/* Track info + play button */}
+      <div className="flex items-center justify-between">
+        <div className="min-w-0 flex-1 mr-3">
+          <p className="font-mono text-[11px] text-foreground truncate">
+            Portfolio Vibes
+          </p>
+          <p className="font-mono text-[9px] text-muted-foreground/60 truncate">
+            Coding Soundtrack
+          </p>
+        </div>
+        <button
+          onClick={toggle}
+          className="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-all hover:scale-105 active:scale-95 flex-shrink-0"
+          aria-label={isPlaying ? "Pause music" : "Play music"}
+        >
+          {isPlaying ? (
+            <Pause className="w-3.5 h-3.5 text-primary" />
+          ) : (
+            <Play className="w-3.5 h-3.5 text-primary ml-0.5" />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Live Clock Card ─── */
+const LiveClockCard = () => {
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const h = time.getHours().toString().padStart(2, "0");
+  const m = time.getMinutes().toString().padStart(2, "0");
+  const s = time.getSeconds().toString().padStart(2, "0");
+  const showColon = time.getSeconds() % 2 === 0;
+
+  const tz =
+    Intl.DateTimeFormat().resolvedOptions().timeZone.split("/").pop()?.replace("_", " ") ?? "";
+
+  return (
+    <div className="relative flex flex-col items-center justify-center h-full text-center overflow-hidden">
+      {/* Subtle radial glow behind time */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.08), transparent 70%)",
+        }}
+      />
+      <span className="relative font-mono text-[8px] text-muted-foreground/50 uppercase tracking-[0.2em] mb-2">
+        {tz}
+      </span>
+      <div className="relative font-mono tabular-nums leading-none">
+        <span className="text-4xl font-bold text-foreground">{h}</span>
+        <span
+          className={`text-4xl font-bold transition-opacity duration-300 ${
+            showColon ? "text-primary" : "text-primary/20"
+          }`}
+        >
+          :
+        </span>
+        <span className="text-4xl font-bold text-foreground">{m}</span>
+      </div>
+      <span className="relative font-mono text-[10px] text-muted-foreground/30 mt-1.5 tabular-nums">
+        .{s}
+      </span>
+    </div>
+  );
+};
+
+/* ─── Tech Pills — from profile config ─── */
+const techPills = profile.hero.techPills as unknown as string[];
+
+/* ─── Main Hero (Bento Grid) ─── */
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const nameRef = useRef<HTMLHeadingElement>(null);
   const [morphIdx, setMorphIdx] = useState(0);
-  const [isHoveringWord, setIsHoveringWord] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [viewMode, setViewMode] = useState<"HUMAN" | "SYSTEM">("HUMAN");
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    const t = setTimeout(() => setHasLoaded(true), 200);
+    return () => clearTimeout(t);
+  }, []);
+
+  const scrambledName = useTextScramble(profile.name, hasLoaded, 35);
+
+  // GitHub mini stats
+  const ghUsername = useMemo(
+    () => profile.links.github.split("/").pop() ?? "vaibhavmahindru",
+    []
+  );
+  const ghStats = useGitHubMiniStats(ghUsername);
+
+  // Mouse-tracking gradient orb
+  const orbX = useMotionValue(0.5);
+  const orbY = useMotionValue(0.5);
+  const springOrbX = useSpring(orbX, { stiffness: 40, damping: 25 });
+  const springOrbY = useSpring(orbY, { stiffness: 40, damping: 25 });
+
+  const handleSectionMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (prefersReducedMotion) return;
+      const rect = sectionRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      orbX.set((e.clientX - rect.left) / rect.width);
+      orbY.set((e.clientY - rect.top) / rect.height);
+    },
+    [orbX, orbY, prefersReducedMotion]
+  );
 
   // Parallax
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
   });
-  const bgY = useTransform(scrollYProgress, [0, 1], [0, 80]);
-  const midY = useTransform(scrollYProgress, [0, 1], [0, 40]);
-  const fgY = useTransform(scrollYProgress, [0, 1], [0, 0]);
+  const bgY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    prefersReducedMotion ? [0, 0] : [0, 60]
+  );
 
-  // Morph cycle on hover
+  // Auto-cycle morph words
   useEffect(() => {
-    if (!isHoveringWord) {
-      setMorphIdx(0);
-      return;
-    }
-    let i = 1;
+    if (prefersReducedMotion) return;
     const interval = setInterval(() => {
-      setMorphIdx(i % morphWords.length);
-      i++;
-    }, 800);
+      setMorphIdx((prev) => (prev + 1) % morphWords.length);
+    }, 2500);
     return () => clearInterval(interval);
-  }, [isHoveringWord]);
-
-  // Metallic cursor light
-  const handleNameMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!nameRef.current) return;
-    const rect = nameRef.current.getBoundingClientRect();
-    setMousePos({
-      x: ((e.clientX - rect.left) / rect.width) * 100,
-      y: ((e.clientY - rect.top) / rect.height) * 100,
-    });
-  }, []);
+  }, [prefersReducedMotion]);
 
   return (
-    <section ref={sectionRef} className="relative min-h-screen flex items-center px-6 pt-16 overflow-hidden">
-      {/* Layer 1: Background grid (parallax) */}
-      <motion.div className="absolute inset-0 z-0 pointer-events-none" style={{ y: bgY }}>
-        <svg className="absolute inset-0 w-full h-full opacity-[0.06]" viewBox="0 0 800 600">
+    <section
+      ref={sectionRef}
+      className="relative min-h-screen flex items-center px-4 sm:px-6 pt-20 pb-12 overflow-hidden"
+      aria-label="Hero section"
+      onMouseMove={handleSectionMouseMove}
+    >
+      {/* Particle Background */}
+      <Suspense fallback={null}>
+        <ParticleMesh />
+      </Suspense>
+
+      {/* Interactive gradient orb */}
+      {!prefersReducedMotion && (
+        <motion.div
+          className="absolute inset-0 z-[1] pointer-events-none"
+          style={{
+            background: useTransform(
+              [springOrbX, springOrbY],
+              ([x, y]: number[]) =>
+                `radial-gradient(600px circle at ${x * 100}% ${y * 100}%, hsl(var(--primary) / 0.07), transparent 60%)`
+            ),
+          }}
+        />
+      )}
+
+      {/* Background grid parallax */}
+      <motion.div
+        className="absolute inset-0 z-[2] pointer-events-none"
+        style={{ y: bgY }}
+      >
+        <svg
+          className="absolute inset-0 w-full h-full opacity-[0.04]"
+          viewBox="0 0 800 600"
+          aria-hidden="true"
+        >
           {Array.from({ length: 12 }).map((_, i) => (
-            <motion.circle
+            <circle
               key={`n-${i}`}
               cx={80 + (i % 4) * 200}
               cy={80 + Math.floor(i / 4) * 180}
               r="3"
               fill="hsl(var(--primary))"
-              animate={{ opacity: [0.3, 0.7, 0.3], scale: [1, 1.2, 1] }}
-              transition={{ duration: 4, delay: i * 0.4, repeat: Infinity }}
+              opacity="0.5"
             />
-          ))}
-          {[
-            [80, 80, 280, 80], [280, 80, 480, 80], [480, 80, 680, 80],
-            [80, 260, 280, 260], [280, 260, 480, 260], [480, 260, 680, 260],
-            [80, 440, 280, 440], [280, 440, 480, 440], [480, 440, 680, 440],
-            [80, 80, 80, 260], [280, 80, 280, 260], [480, 80, 480, 260],
-            [680, 80, 680, 260], [80, 260, 80, 440], [280, 260, 280, 440],
-            [480, 260, 480, 440], [680, 260, 680, 440],
-          ].map(([x1, y1, x2, y2], i) => (
-            <line key={`l-${i}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="hsl(var(--primary))" strokeWidth="0.5" opacity="0.15" />
           ))}
         </svg>
       </motion.div>
 
-      {/* Layer 2: Mid infrastructure (parallax) */}
-      <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ y: midY }}>
-        <div className="absolute top-[15%] right-[10%] w-64 h-64 opacity-[0.04] border border-primary/20 rounded-lg" />
-        <div className="absolute bottom-[20%] left-[5%] w-48 h-48 opacity-[0.04] border border-primary/20 rounded-full" />
+      {/* ─── Bento Grid Content ─── */}
+      <div className="relative z-10 max-w-6xl mx-auto w-full">
+        {/* Typing Prompt */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="mb-4"
+        >
+          <TypingPrompt />
       </motion.div>
 
-      {/* Layer 3: Foreground content */}
-      <motion.div style={{ y: fgY }} className="relative z-10 max-w-6xl mx-auto w-full grid md:grid-cols-2 gap-12 items-center">
-        {/* Left — Identity */}
-        <AnimatePresence mode="wait">
-          {viewMode === "HUMAN" ? (
+        {/* ═══ Bento Grid ═══
+             Row 1:    [Identity 5 ↕2 ] [Photo 4 ↕2] [GitHub 3       ]
+             Row 2:          ↕              ↕         [Clock  3       ]
+             Row 3:    [Headline 4     ] [Music 5    ] [Status 3 ↕2   ]
+             Row 4:    [Tech 9                       ]      ↕
+        ═══════════ */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+
+          {/* ── R1-R2 · Identity + CTAs · 5col tall ── */}
             <motion.div
-              key="human"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-6"
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="md:col-span-5 md:row-span-2 bento-card p-6 flex flex-col justify-between"
             >
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 mb-4">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
                   <div className="status-dot bg-terminal-green" />
                   <span className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
-                    Control Panel Active
-                  </span>
-                </div>
-                {/* Name with metallic cursor reflection */}
-                <h1
-                  ref={nameRef}
-                  onMouseMove={handleNameMouseMove}
-                  className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground relative inline-block"
-                  style={{
-                    backgroundImage: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, hsl(var(--primary) / 0.2), transparent 50%)`,
-                    WebkitBackgroundClip: "text",
-                    backgroundClip: "text",
-                  }}
-                >
-                  Alex Chen
-                </h1>
-                <p className="text-lg md:text-xl text-muted-foreground font-mono">
-                  Backend · Cloud · Automation Systems
-                </p>
+                  {profile.hero.controlPanelLabel}
+                </span>
               </div>
 
-              {/* Interactive headline */}
-              <p className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
-                I BUILD{" "}
-                <span
-                  className="inline-block text-primary cursor-default min-w-[180px]"
-                  onMouseEnter={() => setIsHoveringWord(true)}
-                  onMouseLeave={() => setIsHoveringWord(false)}
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
+                <span className="font-mono">{scrambledName}</span>
+              </h1>
+
+              <div className="text-sm md:text-base text-muted-foreground font-mono">
+                <StaggerWords text={profile.tagline} />
+              </div>
+
+              <p className="text-sm text-muted-foreground/80 leading-relaxed">
+                {profile.bio}
+              </p>
+            </div>
+
+            {/* CTAs */}
+            <div className="space-y-3 mt-5">
+              <div className="flex flex-wrap gap-2">
+                <MagneticButton
+                  href="#contact"
+                  disabled={!!prefersReducedMotion}
+                  className="relative px-5 py-3 md:py-2.5 text-[11px] font-mono bg-primary text-primary-foreground rounded-lg overflow-hidden group"
                 >
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    Deploy a Project
+                    <ArrowRight className="w-3 h-3" />
+                  </span>
+                  <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                </MagneticButton>
+                <MagneticButton
+                  href="#deployments"
+                  disabled={!!prefersReducedMotion}
+                  className="px-5 py-3 md:py-2.5 text-[11px] font-mono border border-border text-foreground rounded-lg hover:border-primary/50 hover:text-primary transition-colors"
+                >
+                  Inspect Systems
+                </MagneticButton>
+                <MagneticButton
+                  href="#resume"
+                  disabled={!!prefersReducedMotion}
+                  className="px-5 py-3 md:py-2.5 text-[11px] font-mono border border-border text-muted-foreground rounded-lg hover:border-primary/40 transition-colors flex items-center gap-1.5"
+                >
+                  <Download className="w-3 h-3" />
+                  Resume
+                </MagneticButton>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/60" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
+                </span>
+                <span className="font-mono text-[9px] text-muted-foreground/50">
+                  {profile.hero.currentBuild}
+                </span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* ── R1-R2 · Photo · 4col tall ── */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.7, ease: [0.215, 0.61, 0.355, 1] }}
+            className="md:col-span-4 md:row-span-2 rounded-2xl overflow-hidden border border-border/40 min-h-[200px] sm:min-h-[280px] md:min-h-0 hover:border-primary/25 transition-all duration-300"
+          >
+            <MagnifyPhoto src={profile.photo} altSrc={profile.altPhoto} alt={profile.name} />
+          </motion.div>
+
+          {/* ── R1 · GitHub Stats · 3col ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="order-3 md:order-none md:col-span-3 bento-card p-4 flex flex-col justify-between relative overflow-hidden"
+          >
+            {/* Subtle gradient corner accent */}
+            <div className="absolute top-0 right-0 w-20 h-20 pointer-events-none"
+              style={{ background: "radial-gradient(circle at 100% 0%, hsl(var(--primary) / 0.06), transparent 70%)" }}
+            />
+
+            {/* Header: avatar + username */}
+            <div className="relative flex items-center gap-2.5 mb-3">
+              {ghStats.avatarUrl ? (
+                <img
+                  src={ghStats.avatarUrl}
+                  alt={ghUsername}
+                  className="w-8 h-8 rounded-full border border-border/50"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Github className="w-4 h-4 text-primary" />
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="font-mono text-[10px] text-foreground font-medium truncate">@{ghUsername}</p>
+                <p className="font-mono text-[8px] text-muted-foreground/60 flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500" />
+                  Active
+                </p>
+              </div>
+            </div>
+
+            {/* Streak */}
+            <div className="relative mb-3">
+              <div className="flex justify-between items-center">
+                <span className="font-mono text-[9px] text-muted-foreground uppercase tracking-wider">Streak</span>
+                <span className="font-mono text-sm font-bold text-primary flex items-center gap-1">
+                  🔥 {ghStats.loaded ? `${ghStats.streak}d` : "--"}
+                </span>
+              </div>
+            </div>
+
+            {/* 7-day mini bar chart */}
+            <div className="relative mb-3">
+              <p className="font-mono text-[8px] text-muted-foreground/50 uppercase tracking-wider mb-1.5">Last 7 days</p>
+              <div className="flex items-end gap-[3px] h-[28px]">
+                {ghStats.last7.map((count, i) => {
+                  const max = Math.max(...ghStats.last7, 1);
+                  const h = Math.max(count / max * 100, 8); // min 8% height so empty days show a sliver
+                  return (
+                    <div
+                      key={i}
+                      className="flex-1 rounded-sm transition-all duration-300"
+                      style={{
+                        height: `${h}%`,
+                        backgroundColor: count > 0
+                          ? `hsl(158 64% ${35 + (count / max) * 16}%)`
+                          : "hsl(0 0% 20%)",
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              <div className="flex justify-between mt-1">
+                {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+                  <span key={i} className="flex-1 text-center font-mono text-[7px] text-muted-foreground/40">{d}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* View profile link */}
+            <a
+              href={profile.links.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative flex items-center justify-center gap-1.5 px-2 py-1.5 text-[9px] font-mono bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+            >
+              View Profile <ArrowRight className="w-2.5 h-2.5" />
+            </a>
+          </motion.div>
+
+          {/* ── R2 · Live Clock · 3col (accent) — hidden on mobile ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.65, duration: 0.5 }}
+            className="hidden md:block md:col-span-3 bento-card-accent p-4"
+          >
+            <LiveClockCard />
+          </motion.div>
+
+          {/* ── R3 · Headline · 4col ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
+            className="md:col-span-4 bento-card p-5 flex flex-col justify-center relative overflow-hidden"
+          >
+            {/* Faint circuit pattern */}
+            <div
+              className="absolute inset-0 opacity-[0.03] pointer-events-none"
+              style={{
+                backgroundImage: `
+                  linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px),
+                  linear-gradient(hsl(var(--primary)) 1px, transparent 1px)
+                `,
+                backgroundSize: "20px 20px",
+              }}
+            />
+            {/* Bottom gradient wash */}
+            <div className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none"
+              style={{ background: "linear-gradient(to top, hsl(var(--primary) / 0.04), transparent)" }}
+            />
+            <div className="relative z-10">
+              <p className="text-lg md:text-xl font-bold text-foreground tracking-tight leading-tight">
+                I BUILD
+              </p>
+              <div className="min-h-[48px] flex items-center">
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={morphWords[morphIdx]}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.25 }}
-                      className="inline-block"
+                    initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -12, filter: "blur(4px)" }}
+                    transition={{ duration: 0.3 }}
+                    className="text-3xl md:text-4xl font-bold text-primary"
                     >
                       {morphWords[morphIdx]}
                     </motion.span>
                   </AnimatePresence>
-                </span>{" "}
+              </div>
+              <p className="text-lg md:text-xl font-bold text-foreground tracking-tight">
                 THAT SCALE.
               </p>
-
-              <p className="text-secondary-foreground leading-relaxed max-w-lg">
-                Building scalable cloud infrastructure and automation pipelines that
-                power production systems. Focused on reliability, performance, and
-                clean architecture.
+              <p className="font-mono text-[9px] text-muted-foreground/30 mt-2">
+                // {profile.statusCard.experienceYears} · production systems
               </p>
+            </div>
+          </motion.div>
 
-              {/* CTAs with micro-interactions */}
-              <div className="flex flex-wrap gap-3 pt-2">
-                <motion.a
-                  href="#contact"
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.25 }}
-                  className="relative px-5 py-2.5 text-xs font-mono bg-primary text-primary-foreground rounded-sm overflow-hidden group"
-                  data-cursor-label="→ Deploy"
-                >
-                  <span className="relative z-10">Deploy a Project</span>
+          {/* ── R3 · Music Player · 5col — hidden on mobile ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.75, duration: 0.5 }}
+            className="hidden md:block md:col-span-5 bento-card p-4"
+          >
+            <MiniMusicPlayer />
+          </motion.div>
+
+          {/* ── R3-R4 · Status · 3col tall ── */}
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"
-                  />
-                </motion.a>
-                <motion.a
-                  href="#deployments"
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.25 }}
-                  className="px-5 py-2.5 text-xs font-mono border border-border text-foreground rounded-sm hover:border-primary/50 hover:text-primary transition-colors"
-                >
-                  Inspect Systems
-                </motion.a>
-                <motion.a
-                  href="#resume"
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.25 }}
-                  className="px-5 py-2.5 text-xs font-mono border border-border text-muted-foreground rounded-sm hover:border-muted-foreground transition-colors"
-                >
-                  Download Resume ↓
-                </motion.a>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="system"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-4"
-            >
-              <pre className="font-mono text-sm text-secondary-foreground bg-card border border-border rounded-md p-5 overflow-x-auto">
-                <code>{JSON.stringify({
-                  runtime: "Active",
-                  primary_function: "Backend Engineering",
-                  cloud_integration: "AWS",
-                  automation_level: "High",
-                  status: "Available for select projects",
-                  location: "India",
-                  uptime: "99.99%",
-                }, null, 2)}</code>
-              </pre>
-              <div className="flex flex-wrap gap-3">
-                <motion.a
-                  href="#contact"
-                  whileHover={{ scale: 1.02 }}
-                  className="px-5 py-2.5 text-xs font-mono bg-primary text-primary-foreground rounded-sm"
-                >
-                  Deploy a Project
-                </motion.a>
-                <motion.a
-                  href="#deployments"
-                  whileHover={{ scale: 1.02 }}
-                  className="px-5 py-2.5 text-xs font-mono border border-border text-foreground rounded-sm hover:border-primary/50 hover:text-primary transition-colors"
-                >
-                  Inspect Systems
-                </motion.a>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+            className="order-last md:order-none md:col-span-3 md:row-span-2 bento-card p-4 flex flex-col justify-between relative overflow-hidden"
+          >
+            {/* Left accent stripe */}
+            <div className="absolute top-3 bottom-3 left-0 w-[2px] bg-gradient-to-b from-primary/40 via-primary/10 to-transparent rounded-full" />
 
-        {/* Right — Animated Grid Visual */}
+            <div className="pl-3 space-y-3">
+              <span className="font-mono text-[8px] text-muted-foreground/40 uppercase tracking-[0.15em]">
+                System Status
+              </span>
+
+              {/* Primary info */}
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-3.5 h-3.5 text-terminal-green flex-shrink-0" />
+                  <span className="font-mono text-[10px] text-terminal-green">
+                    {profile.status}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-3.5 h-3.5 text-primary/60 flex-shrink-0" />
+                  <span className="font-mono text-[10px] text-muted-foreground">
+                    {profile.location}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Cloud className="w-3.5 h-3.5 text-primary/60 flex-shrink-0" />
+                  <span className="font-mono text-[10px] text-muted-foreground">
+                    {profile.statusCard.cloudProviders}
+                  </span>
+                </div>
+                {profile.statusCard.compliance && (
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-3.5 h-3.5 text-primary/60 flex-shrink-0" />
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      {profile.statusCard.compliance}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Divider */}
+              <div className="h-px bg-border/30" />
+
+              {/* Metrics */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-[9px] text-muted-foreground/50 uppercase">Uptime</span>
+                  <span className="font-mono text-[10px] text-terminal-green font-medium">{profile.statusCard.uptime}</span>
+                </div>
+                {/* Uptime bar */}
+                <div className="flex gap-[2px]">
+                  {Array.from({ length: 20 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-1.5 flex-1 rounded-full"
+                      style={{
+                        backgroundColor:
+                          i < 19
+                            ? "hsl(var(--terminal-green) / 0.6)"
+                            : i === 19
+                              ? "hsl(var(--terminal-green) / 0.3)"
+                              : "hsl(var(--muted-foreground) / 0.15)",
+                      }}
+                    />
+                  ))}
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-[9px] text-muted-foreground/50 uppercase">Experience</span>
+                  <span className="font-mono text-[10px] text-foreground font-medium">{profile.statusCard.experienceYears}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-[9px] text-muted-foreground/50 uppercase">Response</span>
+                  <span className="font-mono text-[10px] text-foreground font-medium">{profile.statusCard.responseTime}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-[9px] text-muted-foreground/50 uppercase">Stack</span>
+                  <span className="font-mono text-[10px] text-primary font-medium">{profile.statusCard.stackLabel}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pl-3 pt-2 border-t border-border/30 flex justify-between font-mono text-[9px]">
+              <span className="text-muted-foreground/40">VERSION</span>
+              <span className="text-primary">{profile.version}</span>
+              </div>
+            </motion.div>
+
+          {/* ── R4 · Tech Pills · 9col (extra wide) ── */}
+            <motion.div
+            initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.85, duration: 0.5 }}
+            className="order-last md:order-none md:col-span-9 bento-card p-4"
+          >
+            <span className="font-mono text-[9px] text-muted-foreground/40 uppercase tracking-[0.15em] mb-3 block">
+              Tech Arsenal
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {techPills.map((pill, i) => (
+                <motion.span
+                  key={pill}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1 + i * 0.04, duration: 0.3 }}
+                  className="px-3 py-1.5 text-[10px] font-mono rounded-lg bg-secondary/40 text-foreground/70 border border-border/30 hover:border-primary/40 hover:text-primary hover:bg-primary/5 transition-all duration-200 cursor-default"
+                >
+                  {pill}
+                </motion.span>
+              ))}
+              </div>
+            </motion.div>
+        </div>
+
+        {/* Scroll indicator */}
         <motion.div
+          className="mt-10 flex flex-col items-center gap-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.6 }}
-          className="hidden md:flex items-center justify-center"
+          transition={{ delay: 2, duration: 0.5 }}
         >
-          <div className="relative w-72 h-72 lg:w-80 lg:h-80">
-            {Array.from({ length: 9 }).map((_, i) => {
-              const row = Math.floor(i / 3);
-              const col = i % 3;
-              return (
+          <span className="font-mono text-[10px] text-muted-foreground/40 uppercase tracking-widest">
+            Scroll
+          </span>
                 <motion.div
-                  key={i}
-                  className="absolute w-2 h-2 rounded-full bg-primary/40"
-                  style={{ top: `${row * 40 + 10}%`, left: `${col * 40 + 10}%` }}
-                  animate={{ opacity: [0.3, 0.8, 0.3], scale: [1, 1.3, 1] }}
-                  transition={{ duration: 3, delay: i * 0.3, repeat: Infinity, ease: "easeInOut" }}
-                />
-              );
-            })}
-            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-              {[
-                [10, 10, 50, 10], [50, 10, 90, 10], [10, 50, 50, 50],
-                [50, 50, 90, 50], [10, 90, 50, 90], [50, 90, 90, 90],
-                [10, 10, 10, 50], [50, 10, 50, 50], [90, 10, 90, 50],
-                [10, 50, 10, 90], [50, 50, 50, 90], [90, 50, 90, 90],
-              ].map(([x1, y1, x2, y2], i) => (
-                <motion.line
-                  key={i}
-                  x1={x1 + 5} y1={y1 + 5} x2={x2 + 5} y2={y2 + 5}
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="0.3"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 0.2 }}
-                  transition={{ duration: 1.5, delay: 0.8 + i * 0.1 }}
-                />
-              ))}
-            </svg>
-          </div>
+            className="w-[1px] h-6 bg-primary/30"
+            animate={{ scaleY: [1, 0.4, 1], opacity: [0.5, 0.2, 0.5] }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
         </motion.div>
-      </motion.div>
-
-      {/* Metadata Overlay - corners */}
-      <div className="absolute top-24 left-6 z-10 font-mono text-[10px] text-muted-foreground/30 space-y-1 hidden lg:block">
-        <p>STATUS: AVAILABLE FOR SELECT PROJECTS</p>
-        <p>LOCATION: India</p>
-      </div>
-      <div className="absolute top-24 right-6 z-10 font-mono text-[10px] text-muted-foreground/30 text-right space-y-1 hidden lg:block">
-        <p>FOCUS: Backend + Cloud</p>
-        <p>VERSION: 3.2</p>
-      </div>
-
-      {/* View Mode Toggle */}
-      <div className="absolute bottom-8 left-6 z-10 flex items-center gap-2">
-        <span className="font-mono text-[10px] text-muted-foreground/50">VIEW MODE:</span>
-        {(["HUMAN", "SYSTEM"] as const).map((m) => (
-          <button
-            key={m}
-            onClick={() => setViewMode(m)}
-            className={`px-2 py-1 text-[10px] font-mono rounded-sm border transition-all duration-300 ${
-              viewMode === m
-                ? "border-primary/50 text-primary bg-primary/5"
-                : "border-border/30 text-muted-foreground/40 hover:text-muted-foreground/60"
-            }`}
-          >
-            {m}
-          </button>
-        ))}
       </div>
     </section>
   );
