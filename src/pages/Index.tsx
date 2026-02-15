@@ -1,21 +1,27 @@
-import { useState, lazy, Suspense } from "react";
-import GridBackground from "@/components/GridBackground";
-import ScrollProgress from "@/components/ScrollProgress";
-import ScrollAnimations from "@/components/ScrollAnimations";
+import { lazy, Suspense } from "react";
 import TopBar from "@/components/TopBar";
-import BootSequence from "@/components/BootSequence";
 import HeroSection from "@/components/HeroSection";
-import CustomCursor from "@/components/CustomCursor";
-import TelemetryFeedback from "@/components/TelemetryFeedback";
-import IdleDetector from "@/components/IdleDetector";
-import PerformanceWidget from "@/components/PerformanceWidget";
-import TerminalOverlay, { TerminalHintBadge } from "@/components/TerminalOverlay";
-import EasterEggs from "@/components/EasterEggs";
 import { SectionSkeleton, PanelSkeleton } from "@/components/SkeletonLoader";
 import { profile } from "@/config/profile";
 import { projects } from "@/config/projects";
 
-// Lazy load below-fold sections
+// Lazy load everything that is not above-the-fold
+const GridBackground = lazy(() => import("@/components/GridBackground"));
+const ScrollProgress = lazy(() => import("@/components/ScrollProgress"));
+const ScrollAnimations = lazy(() => import("@/components/ScrollAnimations"));
+const CustomCursor = lazy(() => import("@/components/CustomCursor"));
+const TelemetryFeedback = lazy(() => import("@/components/TelemetryFeedback"));
+const IdleDetector = lazy(() => import("@/components/IdleDetector"));
+const PerformanceWidget = lazy(() => import("@/components/PerformanceWidget"));
+const TerminalOverlay = lazy(() =>
+  import("@/components/TerminalOverlay").then((m) => ({ default: m.default }))
+);
+const TerminalHintBadge = lazy(() =>
+  import("@/components/TerminalOverlay").then((m) => ({ default: m.TerminalHintBadge }))
+);
+const EasterEggs = lazy(() => import("@/components/EasterEggs"));
+
+// Below-fold sections
 const SystemOverview = lazy(() => import("@/components/SystemOverview"));
 const CapabilitiesModule = lazy(() => import("@/components/CapabilitiesModule"));
 const DeployedSystems = lazy(() => import("@/components/DeployedSystems"));
@@ -28,8 +34,6 @@ const ContactModule = lazy(() => import("@/components/ContactModule"));
 const SystemFooter = lazy(() => import("@/components/SystemFooter"));
 
 const Index = () => {
-  const [booted, setBooted] = useState(false);
-
   return (
     <div className="relative min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Skip to content — accessibility */}
@@ -82,19 +86,22 @@ const Index = () => {
         </p>
       </div>
 
-      {!booted && <BootSequence onComplete={() => setBooted(true)} />}
-
-      <CustomCursor />
-      <GridBackground />
-      <ScrollProgress />
-      <ScrollAnimations />
+      {/* Critical above-fold */}
       <TopBar />
-      <TelemetryFeedback />
-      <IdleDetector />
-      <PerformanceWidget />
-      <TerminalOverlay />
-      <TerminalHintBadge />
-      <EasterEggs />
+
+      {/* Deferred overlays + chrome — loaded after first paint */}
+      <Suspense fallback={null}>
+        <GridBackground />
+        <ScrollProgress />
+        <ScrollAnimations />
+        <CustomCursor />
+        <TelemetryFeedback />
+        <IdleDetector />
+        <PerformanceWidget />
+        <TerminalOverlay />
+        <TerminalHintBadge />
+        <EasterEggs />
+      </Suspense>
 
       <main id="main-content" className="relative z-10">
         <HeroSection />

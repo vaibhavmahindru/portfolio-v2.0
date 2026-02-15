@@ -1,11 +1,14 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { ThemeProvider } from "./context/ThemeContext";
 import PageTransition from "./components/PageTransition";
+
+// Only the Index page is eagerly imported; all other routes are lazy
 import Index from "./pages/Index";
-import CaseStudy from "./pages/CaseStudy";
-import SecretPage from "./pages/SecretPage";
-import NotFound from "./pages/NotFound";
+const CaseStudy = lazy(() => import("./pages/CaseStudy"));
+const SecretPage = lazy(() => import("./pages/SecretPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -24,33 +27,41 @@ const AnimatedRoutes = () => {
         <Route
           path="/projects/:slug"
           element={
-            <PageTransition>
-              <CaseStudy />
-            </PageTransition>
+            <Suspense fallback={<div className="min-h-screen bg-background" />}>
+              <PageTransition>
+                <CaseStudy />
+              </PageTransition>
+            </Suspense>
           }
         />
         <Route
           path="/secret"
           element={
-            <PageTransition>
-              <SecretPage />
-            </PageTransition>
+            <Suspense fallback={<div className="min-h-screen bg-background" />}>
+              <PageTransition>
+                <SecretPage />
+              </PageTransition>
+            </Suspense>
           }
         />
         <Route
           path="/admin"
           element={
-            <PageTransition>
-              <SecretPage />
-            </PageTransition>
+            <Suspense fallback={<div className="min-h-screen bg-background" />}>
+              <PageTransition>
+                <SecretPage />
+              </PageTransition>
+            </Suspense>
           }
         />
         <Route
           path="*"
           element={
-            <PageTransition>
-              <NotFound />
-            </PageTransition>
+            <Suspense fallback={<div className="min-h-screen bg-background" />}>
+              <PageTransition>
+                <NotFound />
+              </PageTransition>
+            </Suspense>
           }
         />
       </Routes>

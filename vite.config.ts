@@ -17,10 +17,15 @@ export default defineConfig({
     },
   },
   build: {
+    target: "esnext",
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
         manualChunks: {
+          "react-vendor": ["react", "react-dom", "react-router-dom"],
+          "framer-motion": ["framer-motion"],
           gsap: ["gsap"],
+          icons: ["lucide-react"],
         },
       },
     },
