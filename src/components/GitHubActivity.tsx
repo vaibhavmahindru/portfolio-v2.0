@@ -52,10 +52,15 @@ const useGitHubContributions = (username: string) => {
   const [loading, setLoading] = useState(true);
 
   const calcStreaks = useCallback((days: ContribDay[]) => {
-    // Current streak: walk backwards from the most recent day.
-    // If today has 0 contributions, start from yesterday (the day may not be over yet).
+    // Current streak: walk backwards from today (not from end of array,
+    // because the API returns future dates with count 0).
+    const todayStr = fmtDate(new Date());
+    let todayIdx = days.findIndex((d) => d.date === todayStr);
+    if (todayIdx === -1) todayIdx = days.length - 1; // fallback
+
     let current = 0;
-    let startIdx = days.length - 1;
+    let startIdx = todayIdx;
+    // If today has 0 contributions, start from yesterday (day may not be over yet).
     if (startIdx >= 0 && days[startIdx].count === 0) startIdx--;
     for (let i = startIdx; i >= 0; i--) {
       if (days[i].count > 0) current++;

@@ -251,8 +251,13 @@ const useGitHubMiniStats = (username: string) => {
               last7[6 - i] = found?.count ?? 0;
             }
 
-            // Current streak (walk backwards, skip today if 0)
-            let startIdx = sorted.length - 1;
+            // Current streak (walk backwards from today, not end of array —
+            // API returns future dates with count 0)
+            const todayKey = fmtDateLocal(today);
+            let todayIdx = sorted.findIndex((d: any) => d.date === todayKey);
+            if (todayIdx === -1) todayIdx = sorted.length - 1;
+
+            let startIdx = todayIdx;
             if (startIdx >= 0 && sorted[startIdx].count === 0) startIdx--;
             for (let i = startIdx; i >= 0; i--) {
               if (sorted[i].count > 0) streak++;
@@ -305,8 +310,12 @@ const MagnifyPhoto = ({ src, altSrc, alt }: { src: string; altSrc?: string; alt:
       <img
         src={src}
         alt={alt}
+        width={512}
+        height={512}
         className="w-full h-full object-cover object-top"
         loading="eager"
+        decoding="async"
+        fetchPriority="high"
       />
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-card/20 pointer-events-none" />
@@ -324,7 +333,11 @@ const MagnifyPhoto = ({ src, altSrc, alt }: { src: string; altSrc?: string; alt:
         <img
           src={altSrc || src}
           alt=""
+          width={512}
+          height={512}
           className="w-full h-full object-cover object-top"
+          loading="lazy"
+          decoding="async"
           style={{
             filter: altSrc ? "brightness(1.05) contrast(1.05)" : "brightness(1.15) contrast(1.1) saturate(1.2)",
           }}
@@ -793,7 +806,11 @@ const HeroSection = () => {
                 <img
                   src={ghStats.avatarUrl}
                   alt={ghUsername}
+                  width={32}
+                  height={32}
                   className="w-8 h-8 rounded-full border border-border/50"
+                  loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
