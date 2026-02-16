@@ -13,7 +13,7 @@ const IdleDetector = () => {
 
     const startTimer = () => {
       clearTimeout(timer);
-      timer = setTimeout(() => setIdle(true), 15000);
+      timer = setTimeout(() => setIdle(true), 30000);
     };
 
     const handleActivity = () => {
@@ -49,17 +49,20 @@ const IdleDetector = () => {
         )}
       </AnimatePresence>
 
-      {/* Idle text */}
+      {/* Idle text with terminal hint */}
       <AnimatePresence>
         {idle && (
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.3 }}
+            animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none font-mono text-[10px] text-muted-foreground"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none font-mono text-[11px] text-muted-foreground text-center space-y-1"
           >
-            System Idle
+            <p>System Idle</p>
+            <p className="text-primary/60 text-[10px]">
+              Still there? Press <span className="text-primary">~</span> to wake the terminal...
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
