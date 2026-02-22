@@ -262,19 +262,15 @@ const ContactModule = () => {
                   <label htmlFor="budget" className="font-mono text-[11px] text-muted-foreground uppercase tracking-wider">
                     Budget Range
                   </label>
-                  <select
+                  <input
+                    type="text"
                     id="budget"
                     name="budget"
                     value={form.budget}
                     onChange={handleChange}
+                    placeholder="e.g. ₹ 50,000/$ 1,000 or flexible"
                     className={`${fieldClass} border-border`}
-                  >
-                    <option value="">Select...</option>
-                    <option value="<5k">&lt; $5,000</option>
-                    <option value="5-15k">$5,000 - $15,000</option>
-                    <option value="15-50k">$15,000 - $50,000</option>
-                    <option value="50k+">$50,000+</option>
-                  </select>
+                  />
                 </div>
               </motion.div>
 
