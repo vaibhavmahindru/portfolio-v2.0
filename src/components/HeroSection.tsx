@@ -31,6 +31,7 @@ import {
   Activity,
 } from "lucide-react";
 import { profile } from "@/config/profile";
+import { GlobalSpotlight, BentoCard } from "./MagicBentoEffects";
 
 const ParticleMesh = lazy(() => import("./ParticleMesh"));
 
@@ -583,6 +584,7 @@ const techPills = profile.hero.techPills as unknown as string[];
 /* ─── Main Hero (Bento Grid) ─── */
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
   const [morphIdx, setMorphIdx] = useState(0);
   const [hasLoaded, setHasLoaded] = useState(false);
   const prefersReducedMotion = useReducedMotion();
@@ -705,10 +707,11 @@ const HeroSection = () => {
              Row 3:    [Headline 4     ] [Music 5    ] [Status 3 ↕2   ]
              Row 4:    [Tech 9                       ]      ↕
         ═══════════ */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+        <GlobalSpotlight gridRef={gridRef} spotlightRadius={400} />
+        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-12 gap-4">
 
           {/* ── R1-R2 · Identity + CTAs · 5col tall ── */}
-            <motion.div
+            <BentoCard
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
@@ -776,24 +779,24 @@ const HeroSection = () => {
                 </span>
               </div>
             </div>
-          </motion.div>
+          </BentoCard>
 
           {/* ── R1-R2 · Photo · 4col tall ── */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5, duration: 0.7, ease: [0.215, 0.61, 0.355, 1] }}
-            className="md:col-span-4 md:row-span-2 rounded-2xl overflow-hidden border border-border/40 min-h-[200px] sm:min-h-[280px] md:min-h-0 hover:border-primary/25 transition-all duration-300"
+            className="magic-bento-card magic-bento-card--border-glow md:col-span-4 md:row-span-2 rounded-2xl overflow-hidden border border-border/40 min-h-[200px] sm:min-h-[280px] md:min-h-0 hover:border-primary/25 transition-all duration-300 relative"
           >
             <MagnifyPhoto src={profile.photo} altSrc={profile.altPhoto} alt={profile.name} />
           </motion.div>
 
           {/* ── R1 · GitHub Stats · 3col ── */}
-          <motion.div
+          <BentoCard
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="order-3 md:order-none md:col-span-3 bento-card p-4 flex flex-col justify-between relative overflow-hidden"
+            className="order-3 md:order-none md:col-span-3 bento-card p-4 flex flex-col justify-between"
           >
             {/* Subtle gradient corner accent */}
             <div className="absolute top-0 right-0 w-20 h-20 pointer-events-none"
@@ -873,24 +876,24 @@ const HeroSection = () => {
             >
               View Profile <ArrowRight className="w-2.5 h-2.5" />
             </a>
-          </motion.div>
+          </BentoCard>
 
           {/* ── R2 · Live Clock · 3col (accent) — hidden on mobile ── */}
-          <motion.div
+          <BentoCard
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.65, duration: 0.5 }}
             className="hidden md:block md:col-span-3 bento-card-accent p-4"
           >
             <LiveClockCard />
-          </motion.div>
+          </BentoCard>
 
           {/* ── R3 · Headline · 4col ── */}
-          <motion.div
+          <BentoCard
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.5 }}
-            className="md:col-span-4 bento-card p-5 flex flex-col justify-center relative overflow-hidden"
+            className="md:col-span-4 bento-card p-5 flex flex-col justify-center"
           >
             {/* Faint circuit pattern */}
             <div
@@ -932,24 +935,24 @@ const HeroSection = () => {
                 // {profile.statusCard.experienceYears} · production systems
               </p>
             </div>
-          </motion.div>
+          </BentoCard>
 
           {/* ── R3 · Music Player · 5col — hidden on mobile ── */}
-          <motion.div
+          <BentoCard
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.75, duration: 0.5 }}
             className="hidden md:block md:col-span-5 bento-card p-4"
           >
             <MiniMusicPlayer />
-          </motion.div>
+          </BentoCard>
 
           {/* ── R3-R4 · Status · 3col tall ── */}
-                  <motion.div
+                  <BentoCard
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.5 }}
-            className="order-last md:order-none md:col-span-3 md:row-span-2 bento-card p-4 flex flex-col justify-between relative overflow-hidden"
+            className="order-last md:order-none md:col-span-3 md:row-span-2 bento-card p-4 flex flex-col justify-between"
           >
             {/* Left accent stripe */}
             <div className="absolute top-3 bottom-3 left-0 w-[2px] bg-gradient-to-b from-primary/40 via-primary/10 to-transparent rounded-full" />
@@ -1035,10 +1038,10 @@ const HeroSection = () => {
               <span className="text-muted-foreground/40">VERSION</span>
               <span className="text-primary">{profile.version}</span>
               </div>
-            </motion.div>
+            </BentoCard>
 
           {/* ── R4 · Tech Pills · 9col (extra wide) ── */}
-            <motion.div
+            <BentoCard
             initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.85, duration: 0.5 }}
@@ -1060,7 +1063,7 @@ const HeroSection = () => {
                 </motion.span>
               ))}
               </div>
-            </motion.div>
+            </BentoCard>
         </div>
 
         {/* Scroll indicator */}
