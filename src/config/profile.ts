@@ -39,8 +39,8 @@ export const profile = {
     github: "https://github.com/vaibhavmahindru",
     linkedin: "https://www.linkedin.com/in/vaibhav-mahindru-845604175/",
     email: "vaibhavmahindru04@gmail.com",
-    resume: "#", // TODO: Replace with hosted resume PDF URL or drop file in /public/
-    resumeOnline: "#", // TODO: Replace with online resume URL (read.cv, etc.)
+    resume: "https://drive.google.com/file/d/1X6AB9_PW9p_mVpa1feOr_nnXIKkjE-_J/view?usp=sharing", // TODO: Replace with hosted resume PDF URL or drop file in /public/
+    resumeOnline: "https://drive.google.com/file/d/1X6AB9_PW9p_mVpa1feOr_nnXIKkjE-_J/view?usp=sharing", // TODO: Replace with online resume URL (read.cv, etc.)
   },
 
   // ─── C. Contact ──────────────────────────────────────────────────────────────
