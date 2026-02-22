@@ -27,9 +27,9 @@ export const profile = {
   altPhoto: "/alt-photo.png", // magnifying glass hover alternate
   location: "New Delhi, India",
   tagline: "Backend · Data Engineering · Automation",
-  bio: "Backend-focused software developer and startup founder building scalable APIs, automated data pipelines, and cloud-native systems. I specialize in backend architecture, data engineering, and intelligent automation.",
+  bio: "Backend-focused software developer and startup founder building scalable APIs, automated data pipelines, and cloud-native systems. I specialize in backend architecture, data engineering, and intelligent automation. Oh, and I do frontend too this portfolio didn't mass produce itself.",
   resumeBio:
-    "Software Developer specializing in backend engineering and data systems design with 3+ years of hands-on experience building production APIs, automation pipelines, data ingestion systems, and cloud-native platforms. Founder of MoveAI, a logistics SaaS platform with 57+ REST endpoints, 65+ PostgreSQL models, and 9+ scheduled batch pipelines. Previously worked on enterprise DataOps at AIS (Azure migration, ETL pipelines, Power BI dashboards), backend engineering at Satyacom (Node.js APIs, schema design, background job processors), and data-focused systems strategy at Plaksha University (Python ETL, Power Automate, reporting automation). Strong experience in Node.js, Python, PostgreSQL, AWS, and system design. Passionate about building reliable, scalable systems that transform real-world data into structured, actionable insights.",
+    "Software Developer specializing in backend engineering and data systems design with 3+ years of hands-on experience building production APIs, automation pipelines, data ingestion systems, and cloud-native platforms. Founder of MoveAI, a logistics SaaS platform with 57+ REST endpoints, 65+ PostgreSQL models, and 9+ scheduled batch pipelines. Previously worked on enterprise DataOps at AIS (Azure migration, ETL pipelines, Power BI dashboards), backend engineering at Satyacom (Node.js APIs, schema design, background job processors), and data-focused systems strategy at Plaksha University (Python ETL, Power Automate, reporting automation). Also designs and delivers production websites using React, Tailwind CSS, and Framer Motion. Strong experience in Node.js, Python, PostgreSQL, AWS, and system design. Passionate about building reliable, scalable systems that transform real-world data into structured, actionable insights.",
   status: "Open to backend and data engineering opportunities",
   version: "5.0",
 
@@ -47,7 +47,7 @@ export const profile = {
 
   contact: {
     email: "vaibhavmahindru04@gmail.com",
-    formAction: "https://formspree.io/f/YOUR_FORM_ID", // TODO: Replace with real Formspree form ID
+    formAction: "https://script.google.com/macros/s/AKfycby7mCzrzccOqjbjgn0WEeAHiHauG8OPWCBWumlgW9Z_RMlOxT4RoEg80ue4fB8Y7i_F/exec", // TODO: Replace with your deployed Apps Script URL
   },
 
   // ─── D. Experience / Career Timeline ─────────────────────────────────────────
@@ -110,6 +110,7 @@ export const profile = {
       "PIPELINES",
       "AUTOMATION",
       "DATA PLATFORMS",
+      "WEBSITES",
     ],
     /** Tech badges shown in the tech pills card */
     techPills: [
@@ -129,6 +130,17 @@ export const profile = {
       "Power BI",
       "REST APIs",
       "Gemini API",
+      "TypeScript",
+      "Next.js",
+      "Tailwind CSS",
+      "Git",
+      "Postman",
+      "Redis",
+      "Kafka",
+      "MongoDB",
+      "Framer Motion",
+      "Pandas",
+      "Figma",
     ],
   },
 
@@ -167,6 +179,8 @@ export const profile = {
         "API Versioning",
         "Webhook Handlers",
         "OAuth 2.0",
+        "Git",
+        "Postman",
       ],
       details: [
         "57+ production-grade REST endpoints",
@@ -178,31 +192,34 @@ export const profile = {
       ],
     },
     {
-      module: "Data Engineering",
+      module: "Data & Database Engineering",
       status: "ACTIVE" as const,
       description:
-        "Built 9+ scheduled batch pipelines handling GPS telemetry ingestion, trip settlement computation, financial reconciliation, alert aggregation, reporting materialization, and historical data backfill — all with idempotent processing and retry logic.",
+        "Built 9+ scheduled batch pipelines handling GPS telemetry ingestion, trip settlement computation, financial reconciliation, alert aggregation, and reporting materialization. Designed 65+ PostgreSQL models covering fleet management, vehicle lifecycle, telemetry events, financial settlements, and reporting. Composite indexing and query restructuring reduced reporting latency by ~80%.",
       tools: [
+        "PostgreSQL",
         "Python",
-        "SQL",
         "ETL Pipelines",
         "Pandas",
         "Power BI",
+        "Schema Design",
+        "Query Optimization",
         "Batch Processing",
         "Data Validation",
+        "Redis",
         "Apache Airflow",
-        "dbt",
-        "Data Warehousing",
-        "Stream Processing",
-        "Data Modeling",
-        "NumPy",
-        "Kafka Basics",
+        "Apache Spark",
+        "Apache Kafka",
+        "MongoDB",
+        "Data Warehousing & Modeling",
       ],
       details: [
+        "65+ PostgreSQL schema models across fleet, telemetry, and finance",
         "9+ scheduled batch pipelines (settlements, reconciliation, backfill)",
         "High-frequency GPS telemetry ingestion from Intangles API",
+        "Composite indexing strategies — ~80% reporting latency reduction",
         "Data validation, normalization, deduplication at ingestion",
-        "Idempotent processing to prevent duplicate data writes",
+        "Pre-aggregation tables for materialized reporting pipelines",
         "Enterprise ETL at AIS: on-prem → Azure migration",
         "Power BI dashboards for operational analytics at Plaksha & AIS",
       ],
@@ -221,7 +238,6 @@ export const profile = {
         "CI/CD",
         "Nginx",
         "PM2",
-        "Terraform",
         "CloudWatch",
         "Shell Scripting",
         "Docker Compose",
@@ -235,35 +251,6 @@ export const profile = {
         "GitHub Actions for CI/CD pipelines and deployment automation",
         "Docker containerization for consistent environments",
         "Linux server configuration, shell scripting, cron scheduling",
-      ],
-    },
-    {
-      module: "Database Engineering",
-      status: "ACTIVE" as const,
-      description:
-        "Designed 65+ PostgreSQL models for MoveAI covering fleet management, vehicle lifecycle, driver assignments, trip records, telemetry events, alert systems, financial settlements, and reporting. Composite indexing and query restructuring reduced reporting latency by ~80%.",
-      tools: [
-        "PostgreSQL",
-        "MySQL",
-        "Composite Indexing",
-        "Pre-aggregation",
-        "Schema Design",
-        "Query Optimization",
-        "Database Migrations",
-        "Redis",
-        "Connection Pooling",
-        "Materialized Views",
-        "Relational Modeling",
-        "MongoDB Basics",
-        "Supabase",
-      ],
-      details: [
-        "65+ PostgreSQL schema models across fleet, telemetry, and finance",
-        "Composite indexing strategies for heavy aggregation queries",
-        "~80% reporting latency reduction via query restructuring",
-        "Pre-aggregation tables for materialized reporting pipelines",
-        "Normalized schema optimized for high-write telemetry ingestion",
-        "Relational modeling for trip records, settlements, and auditing",
       ],
     },
     {
@@ -315,6 +302,7 @@ export const profile = {
         "RAG Pipelines",
         "Vector Databases",
         "Prompt Engineering",
+        "Hugging Face",
       ],
       details: [
         "VaYu: natural language → schema-aware prompt → Gemini → dynamic SQL",
@@ -325,15 +313,43 @@ export const profile = {
         "Exploring: AI voice agents, text-based agents, RAG, and function calling",
       ],
     },
+    {
+      module: "Frontend & Web Design",
+      status: "ACTIVE" as const,
+      description:
+        "Designed and delivered 4+ production websites — from corporate platforms to this portfolio. Built with React, Tailwind CSS, Framer Motion, and GSAP. Mobile-first responsive design, performance optimization, SEO, and full lifecycle delivery from design to deployment.",
+      tools: [
+        "React",
+        "Next.js",
+        "Tailwind CSS",
+        "TypeScript",
+        "Framer Motion",
+        "GSAP",
+        "HTML/CSS",
+        "Vite",
+        "Responsive Design",
+        "Figma",
+        "Netlify",
+        "Vercel",
+        "SEO Optimization",
+      ],
+      details: [
+        "4+ production websites delivered end-to-end",
+        "Portfolio built with React + Tailwind CSS + Framer Motion + GSAP",
+        "Mobile-first responsive design with scroll-snap patterns",
+        "Performance optimization: code splitting, lazy loading, image optimization",
+        "Full lifecycle: design → implementation → hosting → domain & DNS",
+        "SEO optimization, meta tags, Open Graph, and accessibility",
+      ],
+    },
   ],
 
   // ─── G. Resume Credential Metrics ────────────────────────────────────────────
 
   resumeMetrics: [
-    { label: "Experience", value: "3+ Years" },
-    { label: "Primary Stack", value: "Backend + Data Engineering" },
-    { label: "Projects Delivered", value: "8+ Production Systems" },
-    { label: "Certifications", value: "—" },
+    // { label: "Experience", value: "3+ Years" },
+    // { label: "Primary Stack", value: "Backend + Data Engineering" },
+    // { label: "Projects Delivered", value: "8+ Production Systems" },
   ],
 
   // ─── H. Live Status Strip ────────────────────────────────────────────────────
@@ -386,15 +402,15 @@ export const profile = {
   // ─── I. AI-Readable Skills (sr-only) ────────────────────────────────────────
 
   skills: {
-    languages: "JavaScript, Python, SQL",
+    languages: "JavaScript, TypeScript, Python, SQL",
     cloud: "AWS (EC2, RDS, S3), Microsoft Azure",
-    databases: "PostgreSQL, MySQL",
-    frontend: "React, HTML, CSS",
-    devops: "Docker, GitHub Actions, Linux",
+    databases: "PostgreSQL, MySQL, MongoDB, Redis",
+    frontend: "React, Next.js, Tailwind CSS, TypeScript, Framer Motion, GSAP, Figma, Responsive Design, HTML, CSS",
+    devops: "Git, Docker, GitHub Actions, Linux, Postman",
     security: "JWT, RBAC, Authentication & Authorization",
     dataEngineering:
-      "ETL Pipelines, Data Ingestion, Batch Processing, Power BI",
-    ai: "Google Gemini API, DeepSeek API, Dynamic SQL Generation",
+      "ETL Pipelines, Data Ingestion, Batch Processing, Power BI, Apache Airflow, Apache Spark, Apache Kafka, Data Warehousing",
+    ai: "Google Gemini API, DeepSeek API, Dynamic SQL Generation, Hugging Face",
     architecture:
       "REST API Design, ETL Pipelines, Modular Backend Design, Multi-tenant Systems",
   },
@@ -402,12 +418,13 @@ export const profile = {
   // ─── J. Terminal Command Data ────────────────────────────────────────────────
 
   terminalStack: {
-    Languages: "JavaScript, Python, SQL",
+    Languages: "JavaScript, TypeScript, Python, SQL",
     Backend: "Node.js, Express, REST APIs, JWT, RBAC",
-    Data: "PostgreSQL, MySQL, ETL Pipelines, Power BI",
+    Frontend: "React, Next.js, Tailwind CSS, Framer Motion, GSAP, Figma",
+    Data: "PostgreSQL, MySQL, MongoDB, Redis, ETL Pipelines, Airflow, Spark, Kafka, Power BI",
     Cloud: "AWS (EC2, RDS, S3), Azure, Docker, Linux",
-    DevOps: "GitHub Actions, Cron, Shell",
-    "AI/LLM": "Gemini API, DeepSeek API, Dynamic SQL Generation",
+    DevOps: "Git, GitHub Actions, Postman, Cron, Shell",
+    "AI/LLM": "Gemini API, DeepSeek API, Hugging Face, Dynamic SQL Generation",
   },
 
   systemJson: {

@@ -27,7 +27,7 @@ const nodes: TechNode[] = [
       "Background Workers",
       "Service-Oriented Design",
     ],
-    connections: ["data-platform", "api", "security", "cloud", "financial"],
+    connections: ["data-platform", "api", "security", "cloud", "financial", "frontend"],
   },
 
   {
@@ -77,7 +77,28 @@ const nodes: TechNode[] = [
       "telemetry",
       "security",
       "financial",
+      "frontend",
     ],
+  },
+
+  {
+    id: "frontend",
+    label: "Frontend & Web Design",
+    shortLabel: "Frontend",
+    category: "core",
+    tools: [
+      "React",
+      "Next.js",
+      "TypeScript",
+      "Tailwind CSS",
+      "Framer Motion",
+      "GSAP",
+      "Vite",
+      "Responsive Design",
+      "SEO Optimization",
+      "Figma",
+    ],
+    connections: ["platform", "api", "devops", "cloud"],
   },
 
   /* ── infrastructure (3) ── */
@@ -110,7 +131,7 @@ const nodes: TechNode[] = [
       "Deployment Automation",
       "Environment Management",
     ],
-    connections: ["cloud", "platform", "automation"],
+    connections: ["cloud", "platform", "automation", "frontend"],
   },
 
   {
