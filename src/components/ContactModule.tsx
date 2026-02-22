@@ -83,16 +83,17 @@ const ContactModule = () => {
       const { _gotcha, ...payload } = form;
       const res = await fetch(profile.contact.formAction, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(payload),
+        redirect: "follow",
       });
-      if (res.ok) {
-    setSubmitted(true);
+      const body = await res.json();
+      if (body.result === "success") {
+        setSubmitted(true);
       } else {
-        window.location.href = `mailto:contact@vaibhavmahindru.com?subject=Project Inquiry from ${form.name}&body=${encodeURIComponent(form.scope)}`;
+        window.location.href = `mailto:${profile.contact.email}?subject=Project Inquiry from ${form.name}&body=${encodeURIComponent(form.scope)}`;
       }
     } catch {
-      window.location.href = `mailto:contact@vaibhavmahindru.com?subject=Project Inquiry from ${form.name}&body=${encodeURIComponent(form.scope)}`;
+      window.location.href = `mailto:${profile.contact.email}?subject=Project Inquiry from ${form.name}&body=${encodeURIComponent(form.scope)}`;
     } finally {
       setSubmitting(false);
     }
