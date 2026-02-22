@@ -48,7 +48,7 @@ export const projects: Project[] = [
       "Production-grade platform processing high-frequency telemetry streams with automated trip settlement calculations, financial reconciliation, alert aggregation, and reporting materialization. Reduced reporting latency by ~80% via query restructuring and pre-aggregation. Zero-duplication ingestion via idempotent processing.",
     learnings:
       "Building a SaaS platform solo teaches you every tradeoff that exists. Schema design decisions made on day one compound over months. Idempotent processing and retry logic aren't optional — they're foundational. AI-driven SQL generation needs strict guardrails to prevent malformed queries.",
-    stack: ["Node.js", "Express", "PostgreSQL", "Python", "AWS", "Gemini API"],
+    stack: ["Node.js", "Express", "PostgreSQL", "Python", "AWS (EC2, RDS, S3)", "Gemini API", "REST APIs", "Cron", "JWT", "RBAC", "Docker", "React", "Tailwind CSS", "Framer Motion"],
     flow: [
       "GPS APIs",
       "Ingestion Pipeline",
@@ -89,7 +89,7 @@ export const projects: Project[] = [
       "Reduced manual reporting effort significantly. Automated daily processing with zero manual intervention. Structured driver-level metrics available every morning before the team starts work. Drivers receive compiled alert reports directly on WhatsApp, closing the feedback loop without any manual dispatch.",
     learnings:
       "Scheduled automation is only as reliable as its error handling. Built comprehensive retry logic and logging to handle API timeouts and data inconsistencies without silent failures. WhatsApp API integration requires careful message templating and rate limit handling.",
-    stack: ["Python", "REST APIs", "PostgreSQL", "Cron", "WhatsApp API"],
+    stack: ["Python", "REST APIs", "PostgreSQL", "Cron", "WhatsApp Business API", "Pandas", "Linux", "Shell Scripting"],
     flow: [
       "Cron (8 AM)",
       "GPS API Fetch",
@@ -127,7 +127,7 @@ export const projects: Project[] = [
       "Enabled non-technical users to query production logistics data using plain language. AI-generated SQL is validated before execution, preventing malformed queries. Grounded in actual schema and data, avoiding hallucinated results.",
     learnings:
       "AI-driven SQL generation needs strict guardrails. Schema-aware prompts dramatically improve accuracy over generic prompts. Validation before execution is non-negotiable in production systems.",
-    stack: ["Python", "Google Gemini API", "PostgreSQL", "Node.js"],
+    stack: ["Python", "Google Gemini API", "DeepSeek API", "PostgreSQL", "Node.js", "Prompt Engineering", "Dynamic SQL"],
     flow: [
       "Natural Language Query",
       "Schema-Aware Prompt",
@@ -165,7 +165,7 @@ export const projects: Project[] = [
       "Delivered a production-grade corporate website with optimized load times and clean SEO. Handled complete project lifecycle from design to live deployment.",
     learnings:
       "Corporate sites demand reliability and professionalism above all else. Clean design, fast load times, and straightforward navigation matter more than flashy features.",
-    stack: ["HTML/CSS", "JavaScript"],
+    stack: ["HTML", "CSS", "JavaScript", "Responsive Design", "SEO", "Google Analytics", "Netlify"],
     flow: ["Design", "Frontend Build", "Optimization", "Deployment", "DNS Config"],
     liveUrl: "https://ecofluidengg.com/",
     metrics: [
@@ -196,15 +196,18 @@ export const projects: Project[] = [
       "Delivered two production-grade websites — both live and serving real users. Rack & Roll drives product engagement with a mobile-first design. TheraChef delivers structured content with clean navigation. Both achieve fast load times via CDN-backed Netlify hosting.",
     learnings:
       "Product pages need to load fast and look great on mobile first — most traffic comes from phones. Content-heavy sites benefit from strong information architecture — structuring content well matters more than visual complexity. Full lifecycle ownership builds reliable delivery instincts.",
-    stack: ["HTML/CSS", "JavaScript"],
+    stack: ["HTML", "CSS", "JavaScript", "Tailwind CSS", "Responsive Design", "Netlify", "Figma", "SEO"],
     flow: ["Design", "Frontend Build", "Asset Optimization", "Responsive QA", "Netlify Deploy", "DNS Config"],
     liveUrls: [
       { label: "Rack & Roll", url: "https://rackandroll.netlify.app/" },
       { label: "TheraChef", url: "https://spectacular-puppy-11875e.netlify.app/" },
+      { label: "ShreeLog", url: "https://shreelog.netlify.app/" },
+      { label: "Webinar Page", url: "https://webinar.moveai.in/" },
+
     ],
     metrics: [
-      { label: "Sites Delivered", value: "2" },
-      { label: "Status", value: "Both Live" },
+      { label: "Sites Delivered", value: "4" },
+      { label: "Status", value: "All Live" },
       { label: "Design", value: "Mobile-first" },
       { label: "Hosting", value: "Netlify CDN" },
     ],
@@ -230,7 +233,7 @@ export const projects: Project[] = [
       "Eliminates manual Excel pivot table workflows. Makes data interpretation accessible to non-technical users. Schema-aware prompt engineering produces contextually accurate AI insights grounded in actual data — not hallucinated summaries. Multi-model support (Gemini / DeepSeek) enables model flexibility and cost optimization.",
     learnings:
       "Raw LLM calls are unreliable — schema awareness is essential. Data must be structured and validated before AI interaction to reduce hallucinations. Summarized statistics are more effective than raw data dumps for prompt engineering. Abstracting API calls across LLM providers enables model switching without code changes.",
-    stack: ["Python", "Streamlit", "Pandas", "Gemini API", "DeepSeek API"],
+    stack: ["Python", "Streamlit", "Pandas", "Gemini API", "DeepSeek API", "Prompt Engineering", "Data Validation"],
     flow: [
       "CSV/XLSX Upload",
       "Pandas Preprocessing",
