@@ -48,7 +48,7 @@ const CapabilitiesModule = () => {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4"
+          className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 scrollbar-none md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:overflow-visible md:snap-none md:pb-0"
         >
           {capabilities.map((cap, i) => {
             const isExpanded = expandedIdx === i;
@@ -56,7 +56,7 @@ const CapabilitiesModule = () => {
               <motion.div
                 key={cap.module}
                 variants={cardVariant}
-                className="glow-border rounded-md bg-card p-5 space-y-3 cursor-default"
+                className="snap-start shrink-0 w-[80vw] max-w-[320px] md:w-auto md:max-w-none md:shrink glow-border rounded-md bg-card p-5 space-y-3 cursor-default"
               >
                 <div className="flex items-start justify-between">
                   <div>

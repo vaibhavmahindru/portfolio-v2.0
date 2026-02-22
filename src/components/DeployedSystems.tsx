@@ -42,7 +42,7 @@ const DeployedSystems = () => {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-50px" }}
-          className="grid md:grid-cols-2 gap-4"
+          className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 scrollbar-none md:grid md:grid-cols-2 md:overflow-visible md:snap-none md:pb-0"
         >
           {projects.map((d) => (
             <motion.div
@@ -53,7 +53,7 @@ const DeployedSystems = () => {
                 scale: 1.01,
                 boxShadow: "0 8px 30px hsl(var(--primary) / 0.08)",
               }}
-              className="glow-border rounded-md bg-card p-5 space-y-3 transition-all duration-300 group"
+              className="snap-start shrink-0 w-[80vw] max-w-[320px] md:w-auto md:max-w-none md:shrink glow-border rounded-md bg-card p-5 space-y-3 transition-all duration-300 group"
             >
               <div className="flex items-start justify-between">
                 <h3 className="font-semibold text-foreground text-lg group-hover:text-primary transition-colors">

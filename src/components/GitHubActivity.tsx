@@ -300,11 +300,11 @@ const GitHubActivity = () => {
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="glow-border rounded-md bg-card overflow-hidden h-full flex flex-col"
+      className="glow-border rounded-md bg-card overflow-hidden h-full flex flex-col min-w-0"
     >
       {/* Header */}
-      <div className="p-5 pb-4 border-b border-border/50">
-        <div className="flex items-center justify-between mb-4">
+      <div className="p-4 pb-3 sm:p-5 sm:pb-4 border-b border-border/50 min-w-0">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center">
               <Github className="w-4 h-4 text-primary" />
@@ -327,15 +327,15 @@ const GitHubActivity = () => {
         </div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex overflow-x-auto snap-x snap-mandatory gap-2 pb-1 scrollbar-none sm:grid sm:grid-cols-4 sm:overflow-visible sm:snap-none sm:pb-0">
           {[
-            { label: "CONTRIBUTIONS", value: loading ? "--" : (stats.totalContribs ?? 0).toLocaleString(), accent: true },
+            { label: "CONTRIBS", value: loading ? "--" : (stats.totalContribs ?? 0).toLocaleString(), accent: true },
             { label: "STREAK", value: loading ? "--" : `${stats.currentStreak ?? 0}d`, accent: false },
             { label: "REPOS", value: loading ? "--" : String(stats.publicRepos ?? 0), accent: false },
             { label: "TODAY", value: loading ? "--" : String(stats.todayCount ?? 0), accent: (stats.todayCount ?? 0) > 0 },
           ].map((s) => (
-            <div key={s.label} className="bg-secondary/50 rounded-sm p-2.5">
-              <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-wider">{s.label}</p>
+            <div key={s.label} className="snap-start shrink-0 w-[28vw] max-w-[120px] sm:w-auto sm:max-w-none sm:shrink min-w-0 bg-secondary/50 rounded-sm p-2 sm:p-2.5">
+              <p className="font-mono text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-wide sm:tracking-wider">{s.label}</p>
               <p className={`font-mono text-sm font-medium mt-0.5 ${s.accent ? "text-primary" : "text-foreground"}`}>
                 {s.value}
               </p>
@@ -345,7 +345,7 @@ const GitHubActivity = () => {
       </div>
 
       {/* Heatmap */}
-      <div className="px-5 py-4 flex-1">
+      <div className="px-3 py-3 sm:px-5 sm:py-4 flex-1 min-w-0 overflow-hidden">
         <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-wider mb-3">
           Contributions — {new Date().getFullYear()}
         </p>

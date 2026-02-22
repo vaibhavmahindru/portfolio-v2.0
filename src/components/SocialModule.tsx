@@ -29,10 +29,10 @@ const SocialModule = () => {
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-      className="glow-border rounded-md bg-card overflow-hidden h-full flex flex-col"
+      className="glow-border rounded-md bg-card overflow-hidden h-full flex flex-col min-w-0"
         >
       {/* Header */}
-      <div className="p-5 pb-4 border-b border-border/50">
+      <div className="p-4 pb-3 sm:p-5 sm:pb-4 border-b border-border/50">
         <div className="flex items-center gap-2.5 mb-1">
           <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center">
             <ExternalLink className="w-4 h-4 text-primary" />
@@ -45,7 +45,7 @@ const SocialModule = () => {
       </div>
 
       {/* Social links */}
-      <div className="p-5 flex-1 space-y-2">
+      <div className="p-4 sm:p-5 flex-1 space-y-2">
           {socials.map((s, i) => (
             <motion.a
               key={s.platform}
@@ -57,12 +57,12 @@ const SocialModule = () => {
               viewport={{ once: true }}
               transition={{ delay: i * 0.08 }}
             whileHover={{ x: 4 }}
-            className="flex items-center gap-3 p-3 rounded-md bg-secondary/30 hover:bg-secondary/60 border border-transparent hover:border-border/50 transition-all group"
+            className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-md bg-secondary/30 hover:bg-secondary/60 border border-transparent hover:border-border/50 transition-all group"
             aria-label={`Visit ${s.platform} profile`}
           >
             <motion.div
               whileHover={iconAnimations[s.platform]}
-              className="w-9 h-9 rounded-md bg-card border border-border/50 flex items-center justify-center shrink-0"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-card border border-border/50 flex items-center justify-center shrink-0"
             >
               <s.icon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
             </motion.div>
@@ -79,7 +79,7 @@ const SocialModule = () => {
       </div>
 
       {/* Footer CTA */}
-      <div className="px-5 pb-5">
+      <div className="px-4 pb-4 sm:px-5 sm:pb-5">
         <div className="p-3 rounded-md bg-primary/5 border border-primary/10">
           <p className="font-mono text-[10px] text-primary text-center">
             Open to collaborations and conversations

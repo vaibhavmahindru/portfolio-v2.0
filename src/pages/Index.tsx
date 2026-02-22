@@ -123,7 +123,7 @@ const Index = () => {
         </Suspense>
         */}
         {/* GitHub + Social + Live Status — combined section */}
-        <section className="px-4 sm:px-6 py-12 md:py-16" id="github">
+        <section className="px-4 sm:px-6 py-12 md:py-16 overflow-x-hidden" id="github">
           <div className="max-w-6xl mx-auto">
             <div className="space-y-2 mb-6" data-gsap="clip-up" data-gsap-duration="1">
               <span className="font-mono text-xs text-primary uppercase tracking-widest">
@@ -134,22 +134,22 @@ const Index = () => {
             <div className="gsap-divider h-px bg-gradient-to-r from-primary/50 via-primary/20 to-transparent mb-6" />
 
             {/* Live Status Strip — edit values in profile.ts → liveStatus */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+            <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 scrollbar-none sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:overflow-visible sm:snap-none sm:pb-0 mb-6">
               {(profile.liveStatus as unknown as { label: string; value: string; color: string; border: string; bg: string }[]).map((m) => (
-                <div key={m.label} className={`p-3 rounded-md border ${m.border} ${m.bg} backdrop-blur-sm`}>
+                <div key={m.label} className={`snap-start shrink-0 w-[42vw] max-w-[160px] sm:w-auto sm:max-w-none sm:shrink p-3 rounded-md border ${m.border} ${m.bg} backdrop-blur-sm`}>
                   <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-wider">{m.label}</p>
                   <p className={`font-mono text-xs font-medium mt-1 ${m.color}`}>{m.value}</p>
                 </div>
               ))}
             </div>
 
-            <div className="grid lg:grid-cols-5 gap-6">
-              <div className="lg:col-span-3">
+            <div className="grid md:grid-cols-5 gap-4 md:gap-6">
+              <div className="md:col-span-3 min-w-0">
                 <Suspense fallback={<PanelSkeleton />}>
                   <GitHubActivity />
                 </Suspense>
               </div>
-              <div className="lg:col-span-2">
+              <div className="md:col-span-2 min-w-0">
                 <Suspense fallback={<PanelSkeleton />}>
                   <SocialModule />
                 </Suspense>
