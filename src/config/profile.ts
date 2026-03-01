@@ -1,5 +1,6 @@
 /**
  * ─── CENTRAL PROFILE CONFIGURATION ───
+ * Original by Vaibhav Mahindru — https://github.com/vaibhavmahindru
  *
  * This is the SINGLE SOURCE OF TRUTH for all personal data displayed
  * across the portfolio. To update any information, edit this file only.

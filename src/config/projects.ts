@@ -1,5 +1,6 @@
 /**
  * ─── PROJECT / DEPLOYMENT DATA ───
+ * Original by Vaibhav Mahindru — https://github.com/vaibhavmahindru
  *
  * Each entry drives both the card on the homepage AND the dedicated case-study page.
  * To add a project: copy an existing entry, change the slug, and fill in your data.

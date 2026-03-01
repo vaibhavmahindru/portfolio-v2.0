@@ -2,6 +2,8 @@
   "name": "command-center-portfolio",
   "private": true,
   "version": "3.2.0",
+  "author": "Vaibhav Mahindru (https://github.com/vaibhavmahindru)",
+  "repository": "https://github.com/vaibhavmahindru/portfolio-v2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

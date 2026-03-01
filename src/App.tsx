@@ -1,3 +1,6 @@
+/**
+ * Original by Vaibhav Mahindru — https://github.com/vaibhavmahindru
+ */
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
